@@ -1,0 +1,253 @@
+{
+  "id": "kyushu-shinkansen-hakata-shinyatsushiro-approx-profile",
+  "line": "九州新幹線",
+  "section": "博多－新八代",
+  "route_length_km": 130.0,
+  "data_type": "calibrated_track_elevation_profile",
+  "purpose": "既存線から新設線を分岐する際、DEM地表標高ではなく既存新幹線の概略線路標高を参照するため",
+  "sources": [
+    {
+      "name": "鉄道・運輸機構 線路縦断概略図（図1-3）",
+      "url": "https://www.jrtt.go.jp/construction/committee/asset/jk27-06-2.pdf"
+    },
+    {
+      "name": "筑紫トンネルの施工（佐賀県土木建築技術協会資料）",
+      "url": "https://www.sagacat.or.jp/pdf/21-2_sagacat_y.pdf",
+      "use": "概略縦断図の縦方向標高の校正参考"
+    }
+  ],
+  "calibration": {
+    "horizontal": {
+      "overview_image_x_at_0km_px": 68.0,
+      "overview_image_x_at_130km_px": 991.0,
+      "px_per_km": 7.1
+    },
+    "vertical_corrected": {
+      "overview_image_y_at_0m_px": 513.617,
+      "px_per_m": 0.577888,
+      "formula": "elevation_m = (513.617 - overview_image_y_px) / 0.577888",
+      "method": "筑紫トンネル詳細縦断図で確定した13.150km－25.085kmの標高と、全線縦断概略図上の同一区間の線路中心位置を最小二乗で対応させた。",
+      "control_points_km": [13.15, 19.3, 20.0, 23.0, 25.085],
+      "rounding_m": 0.5,
+      "estimated_overview_reading_uncertainty_m": 3.5
+    }
+  },
+  "accuracy_note": "筑紫トンネル区間は詳細縦断図と公表勾配を優先し、25.085kmの出口標高にはAffinity計測値41.5mを採用した。その他の区間は全線縦断概略図の線路中心を、同区間から得た共通の縦縮尺で換算して0.5m単位で格納した。0.5m刻みは保存上の分解能であり、全線概略図の線幅・画素数からみた標高読取り精度は概ね±3.5mである。施工設計や厳密な測量標高には使用しない。",
+  "points": [
+    {
+      "distance_km": 0.0,
+      "elevation_m": 18.5
+    },
+    {
+      "distance_km": 2.0,
+      "elevation_m": 23.5
+    },
+    {
+      "distance_km": 5.9,
+      "elevation_m": 23.5
+    },
+    {
+      "distance_km": 6.9,
+      "elevation_m": 34.0
+    },
+    {
+      "distance_km": 8.5,
+      "elevation_m": 39.0
+    },
+    {
+      "distance_km": 13.15,
+      "elevation_m": 165.0,
+      "note": "筑紫トンネル詳細縦断図による制御点"
+    },
+    {
+      "distance_km": 19.3,
+      "elevation_m": 195.75,
+      "note": "5‰区間終点・縦曲線始点"
+    },
+    {
+      "distance_km": 19.4,
+      "elevation_m": 195.96,
+      "note": "縦曲線内"
+    },
+    {
+      "distance_km": 19.5,
+      "elevation_m": 195.61,
+      "note": "縦曲線内"
+    },
+    {
+      "distance_km": 19.6,
+      "elevation_m": 194.68,
+      "note": "縦曲線内"
+    },
+    {
+      "distance_km": 19.7,
+      "elevation_m": 193.18,
+      "note": "縦曲線内"
+    },
+    {
+      "distance_km": 19.8,
+      "elevation_m": 191.11,
+      "note": "縦曲線内"
+    },
+    {
+      "distance_km": 19.9,
+      "elevation_m": 188.46,
+      "note": "縦曲線内"
+    },
+    {
+      "distance_km": 20.0,
+      "elevation_m": 185.25,
+      "note": "縦曲線終点・下り35‰区間始点"
+    },
+    {
+      "distance_km": 23.0,
+      "elevation_m": 80.25,
+      "note": "下り35‰区間終点"
+    },
+    {
+      "distance_km": 24.5,
+      "elevation_m": 52.37,
+      "note": "23.000kmと出口標高41.5mの間を補間"
+    },
+    {
+      "distance_km": 25.0,
+      "elevation_m": 43.08,
+      "note": "23.000kmと出口標高41.5mの間を補間"
+    },
+    {
+      "distance_km": 25.085,
+      "elevation_m": 41.5,
+      "note": "筑紫トンネル出口・Affinity計測による標高制御点"
+    },
+    {
+      "distance_km": 27.6,
+      "elevation_m": 44.5
+    },
+    {
+      "distance_km": 30.1,
+      "elevation_m": 39.0
+    },
+    {
+      "distance_km": 33.2,
+      "elevation_m": 34.0
+    },
+    {
+      "distance_km": 35.6,
+      "elevation_m": 29.0
+    },
+    {
+      "distance_km": 38.9,
+      "elevation_m": 29.0
+    },
+    {
+      "distance_km": 42.1,
+      "elevation_m": 39.0
+    },
+    {
+      "distance_km": 44.2,
+      "elevation_m": 34.0
+    },
+    {
+      "distance_km": 48.7,
+      "elevation_m": 34.0
+    },
+    {
+      "distance_km": 53.7,
+      "elevation_m": 23.5
+    },
+    {
+      "distance_km": 57.6,
+      "elevation_m": 23.5
+    },
+    {
+      "distance_km": 59.3,
+      "elevation_m": 35.7,
+      "note": "修正候補画像の赤線と全線縦断概略図から再読取り"
+    },
+    {
+      "distance_km": 63.52,
+      "elevation_m": 77.2,
+      "note": "第1頂点・修正候補画像の赤線と全線縦断概略図から再読取り"
+    },
+    {
+      "distance_km": 65.92,
+      "elevation_m": 49.5,
+      "note": "谷・修正候補画像の赤線と全線縦断概略図から再読取り"
+    },
+    {
+      "distance_km": 69.15,
+      "elevation_m": 70.3,
+      "note": "第2頂点・修正候補画像の赤線と全線縦断概略図から再読取り"
+    },
+    {
+      "distance_km": 76.06,
+      "elevation_m": 23.6,
+      "note": "下り終端・修正候補画像の赤線と全線縦断概略図から再読取り"
+    },
+    {
+      "distance_km": 77.6,
+      "elevation_m": 29.0
+    },
+    {
+      "distance_km": 82.1,
+      "elevation_m": 29.0
+    },
+    {
+      "distance_km": 85.2,
+      "elevation_m": 86.0
+    },
+    {
+      "distance_km": 89.7,
+      "elevation_m": 60.0
+    },
+    {
+      "distance_km": 93.2,
+      "elevation_m": 29.0
+    },
+    {
+      "distance_km": 97.6,
+      "elevation_m": 23.5
+    },
+    {
+      "distance_km": 102.0,
+      "elevation_m": 23.5
+    },
+    {
+      "distance_km": 104.2,
+      "elevation_m": 29.0
+    },
+    {
+      "distance_km": 108.0,
+      "elevation_m": 23.5
+    },
+    {
+      "distance_km": 111.1,
+      "elevation_m": 29.0
+    },
+    {
+      "distance_km": 114.9,
+      "elevation_m": 18.5
+    },
+    {
+      "distance_km": 117.7,
+      "elevation_m": 18.5
+    },
+    {
+      "distance_km": 120.3,
+      "elevation_m": 23.5
+    },
+    {
+      "distance_km": 123.2,
+      "elevation_m": 18.5
+    },
+    {
+      "distance_km": 125.9,
+      "elevation_m": 23.5
+    },
+    {
+      "distance_km": 130.0,
+      "elevation_m": 23.5
+    }
+  ],
+  "revision_note": "2026-09-02: 筑紫トンネル詳細縦断図で確定した13.150－25.085km区間（出口41.5m）を基準に、全線縦断概略図の縦縮尺を再校正した。全線の既存デジタイズ点を共通換算式で再計算し、筑紫トンネル区間は詳細図に基づく縦曲線・勾配拘束値へ置換した。追補として、赤線で指摘された上り区間の誤点12.8kmを削除し、59.30－76.06kmを第1頂点・谷・第2頂点を含む折れ線へ再デジタイズした。"
+}

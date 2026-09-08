@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="ja" dir="ltr">
+<head>
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西九州ルートシミュレーション</title>
+    <meta name="description" content="新幹線のルートを引き、沿線データを可視化する。">
+
+    <link rel="stylesheet" href="index.css">
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+  </head>
+
+  <body>
+
+    <!-- =========================
+         Header
+         ========================= -->
+    <div class="header">
+      <div class="header-left">
+        <div class="brand">
+          <a id="brand-home-link" class="brand-title" href="index.html" aria-label="西九州ルートシミュレーション トップページへ"><span>西九州ルート</span><span>シミュレーション</span></a>
+          <div class="brand-sub">新幹線のルートを引き、沿線データを可視化する。</div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="header-actions">
+
+          <!-- 地図上のデータを表示する機能。PCでは文字、スマホでは短い表記にする。 -->
+          <button
+            id="btn-data-mode"
+            class="icon-btn header-text-btn data-mode-btn"
+            type="button"
+            title="背景地図・人口・土地利用・標高・観光地を表示"
+            aria-label="データ表示"
+            aria-pressed="false"
+          >
+            <span class="desktop-label">データ表示</span>
+            <span class="mobile-label">データ</span>
+          </button>
+
+          <!-- 操作方法 -->
+          <button
+            id="btn-help"
+            class="icon-btn header-text-btn"
+            type="button"
+            title="操作方法を表示"
+            aria-label="使い方"
+          >
+            <span class="desktop-label">使い方</span>
+            <span class="mobile-label">？</span>
+          </button>
+
+          <!-- 解説・連絡先 -->
+          <details class="header-menu">
+            <summary
+              class="icon-btn header-text-btn header-menu-summary"
+              title="解説・連絡先"
+              aria-label="解説・連絡先"
+            >
+              <span class="desktop-label">解説・連絡先 <span aria-hidden="true">▾</span></span>
+              <span class="mobile-label" aria-hidden="true">⋯</span>
+            </summary>
+
+            <div class="menu-panel" role="menu">
+              <a role="menuitem" href="about.html" target="_blank" rel="noopener" title="新しいタブで開きます">
+                このサイトについて<svg class="external-link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 3h6v6M10 14 21 3M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>
+              </a>
+
+              <a role="menuitem" href="method.html" target="_blank" rel="noopener" title="新しいタブで開きます">
+                算定の考え方<svg class="external-link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 3h6v6M10 14 21 3M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>
+              </a>
+              <a role="menuitem" href="creator.html" target="_blank" rel="noopener" title="新しいタブで開きます">
+                連絡先・制作者情報<svg class="external-link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 3h6v6M10 14 21 3M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>
+              </a>
+              <a role="menuitem" href="privacy.html" target="_blank" rel="noopener" title="新しいタブで開きます">
+                データの利用・プライバシー<svg class="external-link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 3h6v6M10 14 21 3M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>
+              </a>
+            </div>
+          </details>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- =========================
+         Map
+         ========================= -->
+    <div id="map"></div>
+
+    <div
+      id="toast"
+      class="toast"
+      aria-live="polite"
+    ></div>
+
+    <div
+      id="loading"
+      class="loading-badge"
+      style="display:none;"
+    >
+      処理中...
+    </div>
+
+    <aside id="data-mode-panel" class="data-mode-panel is-hidden" aria-label="データ表示の設定">
+      <div class="data-mode-heading">
+        <strong>データ表示モード</strong>
+        <span>閲覧専用</span>
+      </div>
+
+      <section class="data-mode-section" aria-labelledby="basemap-section-title">
+        <div id="basemap-section-title" class="data-mode-section-title">背景地図</div>
+        <div class="data-basemap-options" role="radiogroup" aria-label="背景地図">
+          <label><input name="data-basemap" data-base-map type="radio" value="osm" checked> OpenStreetMap</label>
+          <label><input name="data-basemap" data-base-map type="radio" value="gsi-standard"> 地理院 標準地図</label>
+          <label><input name="data-basemap" data-base-map type="radio" value="gsi-photo"> 地理院 航空写真</label>
+        </div>
+        <p id="data-basemap-note" class="data-layer-note" hidden></p>
+      </section>
+
+      <div class="data-mode-divider" aria-hidden="true"></div>
+      <div class="data-mode-section-title">重ねて表示</div>
+
+      <label><input id="data-population-toggle" data-data-layer type="checkbox" checked> 人口メッシュ</label>
+
+      <div id="population-legend" class="population-legend" aria-label="人口メッシュの凡例">
+        <div class="population-legend-title">人口（500mメッシュ）</div>
+        <div class="population-legend-scale">
+          <span><i style="--legend-color:#2c7bb6"></i>1〜99</span>
+          <span><i style="--legend-color:#00a6ca"></i>100〜249</span>
+          <span><i style="--legend-color:#00bfa5"></i>250〜499</span>
+          <span><i style="--legend-color:#a6d96a"></i>500〜999</span>
+          <span><i style="--legend-color:#fdae61"></i>1,000〜1,999</span>
+          <span><i style="--legend-color:#d7191c"></i>2,000人以上</span>
+        </div>
+        <p class="population-legend-note">
+          ※人口0のメッシュは表示していません。<br>
+          ※1メッシュの面積は西九州付近で約0.27 km²です（位置、主に緯度によってわずかに変わります）。<br>
+          人口密度の目安：表示人口 ÷ 約0.27 ≒ 表示人口 × 約3.7（人/km²）
+        </p>
+      </div>
+
+      <label><input id="data-landuse-toggle" data-data-layer type="checkbox"> 土地利用</label>
+
+      <div id="landuse-legend" class="landuse-legend" aria-label="土地利用の凡例" hidden>
+        <div class="landuse-legend-title">土地利用（約100mメッシュ）</div>
+        <div id="landuse-legend-scale" class="landuse-legend-scale"></div>
+      </div>
+
+      <label><input id="data-elevation-toggle" data-data-layer type="checkbox"> 標高（色別標高図）</label>
+      <div id="elevation-layer-note" class="elevation-layer-note" hidden>
+        <strong>国土地理院 色別標高図</strong>
+        <span>標高の高低を段彩と陰影で表示します。正確な標高値は分析レポートの断面図で確認してください。</span>
+        <small>海域部は海上保安庁海洋情報部の資料を使用して作成。</small>
+      </div>
+
+      <label><input id="data-tourism-toggle" data-data-layer type="checkbox" checked> 観光地</label>
+      <p id="data-mode-status" class="data-mode-status">地図上のデータをクリックすると値を確認できます。</p>
+    </aside>
+
+
+<!-- =========================
+     Guide
+     ========================= -->
+<div
+  id="guide-panel"
+  class="panel guide-panel"
+>
+  <div
+    id="guide-icon"
+    class="guide-icon"
+    aria-hidden="true"
+  >
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <!-- 指 -->
+      <path d="M9 11V6.5a1.5 1.5 0 0 1 3 0V11" />
+      <path d="M12 10V5.5a1.5 1.5 0 0 1 3 0V11" />
+      <path d="M15 10V7a1.5 1.5 0 0 1 3 0v6" />
+      <path d="M9 10.5 7.8 9.3a1.5 1.5 0 0 0-2.1 2.1l4.2 5.2A4 4 0 0 0 13 18h2a4 4 0 0 0 4-4v-2" />
+
+      <!-- タップ位置 -->
+      <circle cx="10.5" cy="3.2" r="1.2" />
+      <path d="M7.5 3.2h-2" />
+      <path d="M13.5 3.2h2" />
+    </svg>
+  </div>
+
+  <div class="guide-text">
+    <h3 id="guide-title">
+      まずは駅を置いてみよう
+    </h3>
+
+    <p id="guide-description">
+      地図上の好きな場所をタップしてください
+    </p>
+
+    <p
+      id="guide-note"
+      class="guide-note"
+      hidden
+    ></p>
+  </div>
+</div>
+
+
+    <!-- =========================
+         PC Side Panels
+         ========================= -->
+    <div
+      id="side-panels"
+      class="side-panels"
+    >
+
+      <div class="side-panels-toolbar">
+        <button
+          id="hide-side-panels-btn"
+          class="side-panels-visibility-btn"
+          type="button"
+          aria-label="右側のパネルをすべて隠す"
+        >
+          パネルを隠す
+        </button>
+      </div>
+
+      <!-- =========================
+           Route Summary
+           ========================= -->
+      <div
+        id="result-panel"
+        class="panel summary-panel"
+      >
+
+        <div class="panel-header">
+          <span>ルート概要</span>
+
+          <button
+            class="toggle-btn"
+            data-target="result-panel-inner"
+            aria-label="ルート概要を折りたたむ"
+          >
+            –
+          </button>
+        </div>
+
+
+        <div
+          id="result-panel-inner"
+          class="panel-content"
+        >
+
+          <div class="metric-list">
+
+            <p>
+              <span>新線区間の駅数</span>
+              <strong id="stationCount">0</strong>
+            </p>
+
+            <p>
+              <span>新線区間の距離</span>
+              <strong>
+                <span id="routeLength">--</span> km
+              </strong>
+            </p>
+
+            <p>
+              <span>長崎〜博多</span>
+              <strong>
+                約<span id="totalTime">--</span>分
+              </strong>
+            </p>
+
+          </div>
+
+
+          <p class="summary-copy">
+            駅を追加したり、作成したルートを保存・共有できます。
+          </p>
+
+
+          <div class="summary-actions stack">
+
+            <button
+              id="add-station-btn"
+              class="primary-btn add-station-btn"
+              type="button"
+            >
+              ＋ 駅を追加
+            </button>
+
+            <div class="two-actions">
+
+              <button
+                id="save-route-btn"
+                class="secondary-btn"
+                type="button"
+              >
+                保存する
+              </button>
+
+              <button
+                id="share-route-btn"
+                class="secondary-btn"
+                type="button"
+              >
+                共有する
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+
+      <!-- 既存のローディングメッセージ -->
+      <div
+        id="loading-message"
+        style="display: none; color: blue; font-weight: bold; margin-top: 10px;"
+      ></div>
+
+
+      <!-- =========================
+           Analysis Mini Panel
+           ========================= -->
+      <div
+        id="analysis-panel"
+        class="panel report-panel-mini"
+      >
+
+        <div class="panel-header">
+          <span>分析レポート</span>
+
+          <button
+            class="toggle-btn"
+            data-target="analysis-panel-inner"
+            aria-label="分析レポートを折りたたむ"
+          >
+            –
+          </button>
+        </div>
+
+
+        <div
+          id="analysis-panel-inner"
+          class="panel-content"
+        >
+
+          <button
+            id="generate-report-btn"
+            class="primary-btn report-btn"
+            type="button"
+          >
+            分析レポートを作成する
+          </button>
+
+          <p class="panel-note">
+            作成したルートの沿線人口、建設費、断面図を下のレポート欄にまとめて表示します。
+          </p>
+
+        </div>
+      </div>
+
+
+      <!-- =========================
+           Station List
+           ========================= -->
+      <div
+        id="station-list-panel"
+        class="panel station-panel bottom-sheet is-hidden"
+      >
+
+        <div class="panel-header">
+          <span>駅リスト</span>
+
+          <button
+            class="toggle-btn"
+            data-target="list-panel-inner"
+            aria-label="駅リストを折りたたむ"
+          >
+            –
+          </button>
+        </div>
+
+
+        <div
+          id="list-panel-inner"
+          class="panel-content"
+        >
+
+          <div
+            id="station-controls"
+            class="station-controls"
+          >
+
+            <label>
+              <input
+                type="checkbox"
+                id="edit-toggle"
+              >
+              駅名を編集
+            </label>
+
+          </div>
+
+
+          <ul
+            id="station-list"
+            class="station-list"
+          ></ul>
+
+        </div>
+      </div>
+
+    </div>
+
+    <button
+      id="show-side-panels-btn"
+      class="side-panels-restore-btn"
+      type="button"
+      aria-label="右側のパネルを表示"
+      hidden
+    >
+      パネルを表示
+    </button>
+
+
+    <!-- =========================
+         Mobile Bottom Bar
+         ========================= -->
+    <div
+      id="mobile-bottom-bar"
+      class="mobile-bottom-bar"
+    >
+<div
+  id="mobile-save-share-menu"
+  class="mobile-save-share-menu"
+  aria-hidden="true"
+>
+  <div class="mobile-save-share-title">
+    このルートを保存・共有
+  </div>
+
+  <div class="mobile-save-share-actions">
+
+    <button
+      id="mobile-save-route-btn"
+      type="button"
+    >
+      保存
+    </button>
+
+    <button
+      id="mobile-share-route-btn"
+      type="button"
+    >
+      共有する
+    </button>
+
+  </div>
+</div>
+      <!-- ルート概要 -->
+      <div
+        class="mobile-summary"
+        aria-label="ルート概要"
+      >
+
+        <div class="mobile-metric">
+          <span>駅</span>
+          <strong id="mobile-station-count">0</strong>
+        </div>
+
+        <div class="mobile-metric">
+          <span>距離</span>
+          <strong>
+            <span id="mobile-route-length">--</span> km
+          </strong>
+        </div>
+
+        <div class="mobile-metric">
+          <span>時間</span>
+          <strong>
+            約<span id="mobile-total-time">--</span>分
+          </strong>
+        </div>
+
+      </div>
+
+
+      <!-- 操作ボタン -->
+      <div class="mobile-actions">
+
+        <button
+          id="mobile-add-station-btn"
+          class="mobile-action-btn mobile-add-station-btn"
+          type="button"
+          aria-label="駅を追加"
+        >
+          駅追加
+        </button>
+
+        <button
+          id="mobile-list-btn"
+          class="mobile-action-btn"
+          type="button"
+          aria-label="駅リストを開く"
+          aria-expanded="false"
+        >
+          駅リスト
+        </button>
+
+        <button
+          id="mobile-analysis-btn"
+          class="mobile-action-btn"
+          type="button"
+          aria-label="分析レポートを開く"
+        >
+          分析
+        </button>
+
+<button
+  id="mobile-save-share-btn"
+  class="mobile-action-btn"
+  type="button"
+  aria-label="保存・共有"
+>
+  保存・共有
+</button>
+
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         Analysis Report
+         ========================= -->
+    <section
+      id="report-dock"
+      class="report-dock bottom-sheet is-hidden"
+      aria-live="polite"
+    >
+
+      <div class="report-header">
+
+        <div>
+
+          <h2>分析レポート</h2>
+
+          <p id="report-status">
+            レポートを作成すると、沿線人口・建設費・断面図を確認できます。
+          </p>
+
+        </div>
+
+
+        <button
+          id="close-report-btn"
+          class="icon-btn"
+          type="button"
+          aria-label="レポートを閉じる"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="report-grid">
+
+        <!-- 沿線人口 -->
+        <section class="report-card">
+
+          <h3>沿線人口</h3>
+
+          <p
+            id="report-population"
+            class="report-value"
+          >
+            --
+          </p>
+
+          <p
+            id="report-population-note"
+            class="report-note"
+          >
+          このルートによって、あらたに博多方面へ新幹線で直通できるようになった駅の半径5km以内の人口を、重複を除いて集計しています。(既存の九州新幹線区間の駅（新鳥栖、博多等）の人口は含みません。)
+
+          </p>
+
+        </section>
+
+        <!-- 建設費 -->
+        <section class="report-card">
+
+          <h3>建設コスト指数</h3>
+
+          <p
+            id="report-cost"
+            class="report-value"
+          >
+            --
+          </p>
+
+          <p
+            id="report-cost-note"
+            class="report-note"
+          >
+            高架・地上・トンネルを含む概算結果を表示します。
+          </p>
+
+        </section>
+
+
+        <!-- 断面図 -->
+        <section class="report-card report-card-wide">
+
+          <div class="profile-card-heading">
+
+            <h3>断面図</h3>
+
+            <button
+              id="toggle-existing-profile-btn"
+              class="profile-mode-btn"
+              type="button"
+              aria-pressed="false"
+              disabled
+            >
+              既存線も表示
+            </button>
+
+          </div>
+
+          <p
+            id="profile-processing-status"
+            class="profile-processing-status"
+            role="status"
+            aria-live="polite"
+            hidden
+          >
+            <span
+              class="profile-processing-spinner"
+              aria-hidden="true"
+            ></span>
+            <span>処理中です。既存線を含む断面図を作成しています。</span>
+          </p>
+
+          <div
+            id="profile-chart-wrap"
+            class="chart-wrap"
+            aria-busy="false"
+          >
+
+            <canvas
+              id="profileChart"
+              width="960"
+              height="260"
+            ></canvas>
+
+          </div>
+
+          <p
+            id="report-chart-note"
+            class="report-note"
+          >
+            新線区間の地形と設計線を重ねて表示します。
+          </p>
+<p
+  id="profile-missing-elevation-note"
+  class="profile-missing-elevation-note"
+  hidden
+>
+  <span class="profile-missing-elevation-swatch"></span>
+  水色の区間は標高データを取得できなかった区間です。
+  海上など標高データがない地点や、DEMの取得に失敗した地点で表示されます。
+  該当区間は計算上、標高0mとして扱っています。
+</p>
+<p
+  id="profile-gradient-warning"
+  class="profile-gradient-warning"
+  hidden
+></p>
+        </section>
+
+        <!-- 分析後の次のステップ -->
+        <section
+          id="route-evaluation-entry"
+          class="report-next-step report-card-wide"
+          hidden
+        >
+          <div class="report-next-step-copy">
+            <span class="report-next-step-kicker">次のステップ</span>
+            <h3>ルートの特徴をまとめて見てみよう</h3>
+            <p>人口・時間・コスト・観光・開発余地を、5つの指標でまとめて確認できます。</p>
+          </div>
+
+          <button
+            id="show-route-evaluation-btn"
+            class="route-evaluation-btn"
+            type="button"
+          >
+            <span>ルート評価を見る</span>
+            <span class="route-evaluation-arrow" aria-hidden="true">→</span>
+          </button>
+        </section>
+
+      </div>
+
+      <!-- 「ルート評価を見る」を押した後だけ表示 -->
+      <section
+        id="route-evaluation-panel"
+        class="route-evaluation-panel"
+        hidden
+      >
+        <div class="route-evaluation-heading">
+          <div>
+            <span class="route-evaluation-label">ルート評価</span>
+            <h3>5つの指標で見るルートの特徴</h3>
+          </div>
+          <p>簡易モデルの参考値です。地域の価値や政策の優劣、実際の開発可能性を示すものではありません。<a href="method.html" target="_blank" rel="noopener" title="新しいタブで開きます">算定条件<svg class="external-link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 3h6v6M10 14 21 3M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg></a></p>
+        </div>
+
+        <div class="radar-layout">
+          <div class="radar-chart-wrap">
+            <canvas id="radarChart" width="360" height="300"></canvas>
+          </div>
+
+          <div class="route-evaluation-copy">
+            <p
+              id="report-radar-summary"
+              class="report-note report-radar-summary"
+            >
+              ルート評価を表示すると、5つの比較指標を確認できます。
+            </p>
+            <p class="report-note">
+              各指標は候補ルート同士を比較するための0〜100点の相対評価です。法規制、事業性、需要予測を確定するものではありません。
+            </p>
+          </div>
+        </div>
+
+        <div class="evaluation-share-card">
+          <div class="evaluation-share-copy">
+            <span class="evaluation-share-label">結果を共有</span>
+            <strong>この仮想ルートを共有する</strong>
+            <p>分析後は、地図・ルート評価・分析レポートの3枚と再現用URLをまとめて共有できます。</p>
+          </div>
+
+          <div class="evaluation-share-actions">
+            <button
+              id="evaluation-share-btn"
+              class="evaluation-share-btn"
+              type="button"
+            >
+              共有する
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </section>
+
+
+
+
+    <!-- =========================
+         Share chooser (PC)
+         ========================= -->
+    <div
+      id="share-choice-modal"
+      class="share-choice-backdrop"
+      aria-hidden="true"
+    >
+      <section
+        class="share-choice-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="share-choice-title"
+      >
+        <div class="share-choice-header">
+          <div>
+            <span class="share-choice-kicker">共有</span>
+            <h2 id="share-choice-title">この仮想ルートを共有</h2>
+          </div>
+
+          <button
+            id="share-choice-close"
+            class="icon-btn"
+            type="button"
+            aria-label="共有メニューを閉じる"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="share-choice-actions">
+          <button
+            id="share-x-btn"
+            class="share-choice-action"
+            type="button"
+          >
+            <strong>Xで投稿する</strong>
+            <span>本文と再現用URLを入力した状態でXを開きます。画像は自動添付されません。</span>
+          </button>
+
+          <button
+            id="share-images-btn"
+            class="share-choice-action"
+            type="button"
+          >
+            <strong>画像付きで共有する</strong>
+            <span>地図・ルート評価・分析レポートの3枚をOSの共有機能へ渡します。</span>
+          </button>
+        </div>
+
+        <p id="share-choice-note" class="share-choice-note">
+          画像付き共有の共有先は、Windowsやブラウザに登録されているアプリによって異なります。
+        </p>
+      </section>
+    </div>
+
+    <!-- =========================
+         Scripts
+         ========================= -->
+    <script src="jquery/jquery-3.7.1.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+
+    <script src="script/translate.js"></script>
+
+    <script
+      type="module"
+      src="script/main.js"
+    ></script>
+
+
+    <!-- =========================
+         Mobile Button Connections
+         ========================= -->
+    <script>
+
+      /*
+       * スマホ用ボタンは、既存の機能を呼び出します。
+       *
+       * 駅リスト
+       *   → スマホ下部の専用ボタンから開閉
+       *
+       * 分析
+       *   → 既存の generate-report-btn
+       *
+       * これにより、既存JavaScriptの処理を
+       * できるだけ変更せずに利用できます。
+       */
+
+    // スマホの駅リストを開閉する。
+    // 閉じた後は is-hidden を付け、iOS Safariの描画対象から完全に外す。
+    const mobileListBtn = document.getElementById("mobile-list-btn");
+
+    mobileListBtn.addEventListener("click", function () {
+      const stationPanel = document.getElementById("station-list-panel");
+      if (!stationPanel) return;
+
+      const isOpen = stationPanel.classList.contains("mobile-open");
+
+      if (isOpen) {
+        // まず下へスライドさせる。
+        stationPanel.classList.remove("mobile-open");
+        mobileListBtn.setAttribute("aria-expanded", "false");
+
+        // CSSのtransition（0.25秒）が終わった後、完全に非表示にする。
+        window.setTimeout(function () {
+          // 閉じている途中で再度開かれた場合は非表示にしない。
+          if (!stationPanel.classList.contains("mobile-open")) {
+            stationPanel.classList.add("is-hidden");
+          }
+        }, 280);
+
+        return;
+      }
+
+      // display:none状態を解除してから、次フレームでスライド表示する。
+      // PC用の折りたたみ状態が残っていても、スマホでは必ず全体表示に戻す。
+      const stationPanelInner = document.getElementById("list-panel-inner");
+      const stationPanelToggle = stationPanel.querySelector(
+        '.toggle-btn[data-target="list-panel-inner"]'
+      );
+
+      if (stationPanelInner) {
+        stationPanelInner.classList.remove("hidden", "panel-hidden");
+      }
+      if (stationPanelToggle) {
+        stationPanelToggle.textContent = "–";
+      }
+
+      stationPanel.classList.remove("is-hidden");
+      mobileListBtn.setAttribute("aria-expanded", "true");
+
+      window.requestAnimationFrame(function () {
+        window.requestAnimationFrame(function () {
+          stationPanel.classList.add("mobile-open");
+        });
+      });
+    });
+
+
+      document
+        .getElementById("mobile-analysis-btn")
+        .addEventListener("click", function () {
+
+          const button =
+            document.getElementById("generate-report-btn");
+
+          if (button) {
+            button.click();
+          }
+
+        });
+
+
+// 保存・共有メニューは ui.js で開閉します。
+
+
+      /*
+       * 既存のルート情報を
+       * スマホ用サマリーにも反映します。
+       */
+
+      function updateMobileSummary() {
+
+        const stationCount =
+          document.getElementById("stationCount");
+
+        const routeLength =
+          document.getElementById("routeLength");
+
+        const totalTime =
+          document.getElementById("totalTime");
+
+        const mobileStationCount =
+          document.getElementById("mobile-station-count");
+
+        const mobileRouteLength =
+          document.getElementById("mobile-route-length");
+
+        const mobileTotalTime =
+          document.getElementById("mobile-total-time");
+
+
+        if (stationCount && mobileStationCount) {
+          mobileStationCount.textContent =
+            stationCount.textContent;
+        }
+
+        if (routeLength && mobileRouteLength) {
+          mobileRouteLength.textContent =
+            routeLength.textContent;
+        }
+
+        if (totalTime && mobileTotalTime) {
+          mobileTotalTime.textContent =
+            totalTime.textContent;
+        }
+
+      }
+
+
+      /*
+       * 既存の処理で数値が更新された後にも
+       * スマホ側を更新できるよう、一定間隔で同期します。
+       *
+       * 軽い処理なので、地図や計算処理には
+       * ほとんど影響しません。
+       */
+
+      updateMobileSummary();
+      setInterval(updateMobileSummary, 300);
+
+    </script>
+
+
+    <!-- =========================
+         Help Modal
+         ========================= -->
+    <div
+      id="help-modal"
+      class="modal-backdrop"
+      aria-hidden="true"
+    >
+
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="help-title"
+      >
+
+        <div class="modal-header">
+
+          <div
+            id="help-title"
+            class="modal-title"
+          >
+            路線作成の操作
+          </div>
+
+          <button
+            id="btn-help-close"
+            class="icon-btn"
+            type="button"
+            aria-label="閉じる"
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+          <ul class="help-list">
+
+            <li>
+              最初は、地図をクリックすると駅が1つ追加され、ルートが作成されます。
+            </li>
+
+            <li>
+              ルート作成後に駅を増やすときは「駅を追加」を押してから、地図上の場所をクリックしてください。
+            </li>
+
+            <li>
+              駅をドラッグすると位置を調整できます。
+            </li>
+
+            <li>
+              線路上の黒い点をドラッグすると、線路を曲げることができます。ドラッグした点はグレーの曲がり点になり、あとから位置を調整できます。
+            </li>
+
+            <li>
+              駅をクリックすると、駅名の変更や駅の削除ができます。駅名は右の駅リストからも変更できます。
+            </li>
+
+            <li>
+              グレーの曲がり点をクリックすると、駅への変更や曲がり点の削除ができます。
+            </li>
+
+            <li>
+              分析レポートを作成すると、沿線人口・建設費・断面図が下に表示されます。
+            </li>
+
+          </ul>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </body>
+</html>

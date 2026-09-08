@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="西九州ルートシミュレーションで使用するデータと、距離・所要時間・沿線人口・建設コスト・観光アクセス・開発余地などの算定方法を説明します。">
+  <title>算定方法・使用データ | 西九州ルートシミュレーション</title>
+  <link rel="stylesheet" href="./document.css">
+  <style>
+    /* このページ固有の表示だけを補う最小限のスタイル */
+    html { scroll-behavior: smooth; }
+
+    h4 {
+      margin: 22px 0 6px;
+      font-size: 15px;
+    }
+
+    a { color: var(--accent); }
+
+    .toc {
+      margin: 26px 0 34px;
+      padding: 16px 20px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fafafa;
+    }
+
+    .toc strong { color: var(--accent); }
+    .toc ol, .toc ul { margin: 8px 0 0; padding-left: 1.5em; }
+    .toc a { text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+
+    .no-indent,
+    .formula,
+    .source,
+    .draft-note,
+    blockquote p { text-indent: 0 !important; }
+
+    .formula {
+      overflow-x: auto;
+      margin: 14px 0;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #f1f2f4;
+      font-family: ui-monospace, Consolas, "SFMono-Regular", monospace;
+      white-space: nowrap;
+    }
+
+    blockquote {
+      margin: 12px 0 18px;
+      padding: 10px 16px;
+      border-left: 4px solid #c9cdd2;
+      background: #fafafa;
+      color: #3b3d40;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin: 14px 0 20px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 520px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { background: #f6f7f8; }
+
+    .source {
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .draft-note {
+      padding: 10px 12px;
+      border: 1px dashed #c9cdd2;
+      border-radius: 8px;
+      color: var(--muted);
+      background: #fafafa;
+    }
+
+    details.explain {
+      margin: 12px 0 20px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fafafa;
+    }
+
+    details.explain summary {
+      position: relative;
+      padding: 11px 14px 11px 40px;
+      cursor: pointer;
+      list-style: none;
+      font-size: 14px;
+      font-weight: 700;
+      color: #3b3d40;
+    }
+
+    details.explain summary::-webkit-details-marker { display: none; }
+
+    details.explain summary::before {
+      content: "+";
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent);
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 500;
+    }
+
+    details.explain[open] summary::before { content: "−"; }
+
+    details.explain .detail-body {
+      padding: 0 14px 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    details.explain .detail-body > p:first-child { margin-top: 12px; }
+
+    .cost-flow {
+      margin: 14px 0 22px;
+    }
+
+    .important-note {
+      margin: 16px 0 22px;
+      padding: 12px 14px;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      background: #fafafa;
+      text-indent: 0;
+    }
+
+    @media (max-width: 640px) {
+      .toc { padding: 14px 16px; }
+      table { min-width: 460px; }
+      .formula { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="./index.html">← 西九州ルートシミュレーションへ戻る</a>
+  </header>
+
+  <main>
+    <h1>算定方法・使用データ</h1>
+    
+<p class="lead">このページでは、西九州ルートシミュレーションで行っている計算の方法、使用しているデータ、および計算上の仮定について説明します。</p>
+<p class="important-note"><strong>はじめに：</strong>本サイトの計算には、実際の鉄道計画で必要となる条件のうち考慮していないものがあります。数値を見る際の前提として、<a href="#limitations">「4. 本サイトでは考慮していない主な要素」</a>もあわせてご確認ください。</p>
+<nav aria-label="ページ内目次" class="toc">
+<strong>このページの内容</strong>
+<ol>
+<li><a href="#route-calculation">新幹線ルートの計算</a></li>
+<li><a href="#data-sources">使用しているデータ</a></li>
+<li><a href="#indicators">各指標の算出方法</a>
+<ul>
+<li><a href="#population-index">沿線人口</a></li>
+<li><a href="#cost-index">建設コスト</a></li>
+<li><a href="#tourism-index">観光アクセス</a></li>
+<li><a href="#development-index">開発余地</a></li>
+</ul>
+</li>
+<li><a href="#limitations">考慮していない主な要素</a></li>
+</ol>
+</nav>
+<h2 id="route-calculation">1. 新幹線ルートの計算</h2>
+<h3 id="position">1-1. 位置</h3>
+<p>駅や線路などの位置は、すべて緯度・経度で管理しています。</p>
+<p>地図上に配置された駅や中間点の緯度・経度をもとに、距離、標高、人口、土地利用などの各種データを取得しています。</p>
+<h3 id="distance">1-2. 距離</h3>
+<p>2地点間の距離は、緯度・経度から <strong>Haversine（ハバーサイン）公式</strong> を用いて算出しています。</p>
+<p>緯度を φ、経度を λ とすると、</p>
+<p class="formula">a = sin²((φ₂ − φ₁) / 2) ＋ cos φ₁ × cos φ₂ × sin²((λ₂ − λ₁) / 2)</p>
+<p class="formula">c = 2 × atan2(√a, √(1 − a))</p>
+<p class="formula">d = R × c</p>
+<p>として2地点間の距離 d を求めます。</p>
+<p>R は地球の半径です。</p>
+<p>ルート全体の距離は、駅や中間点で区切られた各区間の距離を合計して算出しています。</p>
+<h3 id="travel-time">1-3. 所要時間</h3>
+<p>列車の最高速度は <strong>260km/h</strong> としています。これは、全国新幹線鉄道整備法に基づく整備計画で、整備新幹線の最高設計速度が260km/hと定められていることを踏まえたものです。</p>
+<p>本サイトでは計算を簡略化するため、次の条件で列車が走行するものと仮定しています。</p>
+<ul>
+<li>最高速度：260km/h</li>
+<li>加速度：2.6km/h/s</li>
+<li>減速度：2.7km/h/s</li>
+<li>中間駅での停車時間：2分</li>
+</ul>
+<p>駅間距離が十分に長い場合は、最高速度まで加速した後、260km/hで走行し、その後減速するものとして計算します。</p>
+<p>駅間距離が短く260km/hまで到達できない場合は、途中まで加速した後に減速へ移行するものとして計算します。</p>
+<p>各駅間の走行時間と中間駅での停車時間を合計したものを、ルート全体の所要時間としています。</p>
+<p>駅一覧の経過時間も、既存駅・新設駅を通じて同じ計算条件で算出した長崎出発からの到着時間です。実際の列車の時刻表ではありません。通過点は駅数に含めません。</p>
+<p>本サイトでは、曲線を中間点（曲がり点）で表現しており、円曲線として曲線半径を設定していません。そのため、曲線による速度制限は計算していません。</p>
+<h3 id="elevation">1-4. 断面図・標高</h3>
+<p>ルート周辺の標高は、国土地理院が公開している標高タイル（DEM）から取得しています。</p>
+<p>ルート上を<strong>地点間隔が100m以下になるよう等間隔に分割</strong>し、それぞれの地点の標高を取得することで、地形の断面図を作成しています。</p>
+<p>標高を取得できなかった地点のうち、土地利用データで河川・湖沼または海水域と確認できる地点は、0mとして概算します。水深は反映しておらず、水域を含む縦断線形や建設コストの精度には限界があります。</p>
+<p>水域と確認できない地点の標高欠測も、新線全体で10地点以下の場合は0mで仮置きして分析を続けます。境界のずれ等による少数の欠測を許容するもので、実際の標高が0mであることを示しません。縦断線形・建設コストなどの算定結果に誤差が生じる可能性があるため、補完した地点数を分析レポートと共有画像に表示します。断面図では水域・水域未確認を問わず標高未取得区間を水色で表示します。</p>
+<p>水域と確認できない標高欠測が11地点以上ある場合や、計算に必要な土地利用データを取得できない場合は、分析を中止して再試行を案内します。ルートを変更すると古い分析結果は無効になります。</p>
+<p>なお、表示される断面図は、実際の鉄道設計に使用できる精度を持つものではありません。</p>
+<h3 id="gradient">1-5. 勾配</h3>
+<p>西九州新幹線（武雄温泉～長崎間）の最急勾配が <strong>30‰</strong> であることを参考に、本サイトでも原則として30‰以下となるように新線の高さを計算しています。</p>
+<p>30‰とは、水平距離1,000mに対して30mの高低差となる勾配で、百分率では3％に相当します。</p>
+<p>取得した地表面の標高をもとに、30‰の勾配制限を満たしながら線路の高さを設定し、その線路高と地表面の高さとの差から、地上・高架・トンネルなどの構造を簡易的に判定しています。</p>
+<h4>縦断線形の算定方法</h4>
+<p>縦断線形は、駅から次の駅までを一つの区間として計算します。新設駅の計画高はその地点の地表標高に固定します。既存線との接続点には、公表縦断図から作成した概略線路高を使用します。既存線資料を読み込めない場合はDEMを使用します。</p>
+<p>まず、隣り合う2駅の高低差と駅間距離から、両駅を30‰以内の勾配で接続できるかを確認します。</p>
+<p>30‰以内で接続できる場合は、最初に両駅を直線で結んだ線を作ります。その後、隣り合う地点間の勾配が30‰を超えない範囲で、それぞれの地点の計画高を地表面の高さへ近づけます。</p>
+<p>この処理をルートの両方向から繰り返すことで、30‰以内の勾配を保ちながら、できるだけ地形に近い縦断線形を作成します。</p>
+<p>計算終了後には、各地点間の勾配を再度確認し、30‰以内となっているかを確認しています。計算上の問題などによって30‰以内の線形を作成できなかった場合は、両駅を直線で結んだ線に戻します。</p>
+<p>一方、2駅の高低差そのものが大きく、両駅を30‰以内で接続できない場合は、両駅を直線で結んで表示します。この場合、画面上に勾配に関する警告を表示します。</p>
+<p>警告文：</p>
+<blockquote>
+<p>「この駅配置では、一部の駅間で線路の勾配が30‰（1km進む間に30m上る勾配）を超えます。勾配が急すぎるため、このままでは新幹線が走れない可能性があります。駅の位置を変えると、勾配をゆるくできる場合があります。」</p>
+</blockquote>
+<p>算出した計画高と地表標高を比較し、計画高が地表より低い区間をトンネル、地表より高い区間を高架、両者が一致する区間を地上区間として簡易的に分類しています。</p>
+<p>本サイトの縦断線形は、地形と最大勾配をもとにした簡易的な算定です。実際の鉄道設計で必要となるその他の条件については、<a href="#limitations">「4. 本サイトでは考慮していない主な要素」</a>にまとめています。</p>
+<h2 id="data-sources">2. 使用しているデータ</h2>
+<h3 id="population-data">2-1. 人口</h3>
+<p>人口データには、<strong>令和2年（2020年）国勢調査の500mメッシュ人口</strong>を使用しています。</p>
+<p>各500mメッシュに記録された総人口を使用し、駅周辺人口や市街地の人口密度などを計算しています。</p>
+<p class="source">出典：政府統計の総合窓口 e-Stat<br/>
+<a href="https://www.e-stat.go.jp/gis/statmap-search" rel="noopener noreferrer" target="_blank">https://www.e-stat.go.jp/gis/statmap-search</a></p>
+<h3 id="landuse-data">2-2. 土地利用</h3>
+<p>土地利用状況には、国土交通省「国土数値情報」の <strong>土地利用細分メッシュデータ（2021年度）</strong>を使用しています。</p>
+<p>このデータでは、おおむね100mメッシュ単位で、田、その他の農用地、森林、荒地、建物用地、道路、鉄道、河川・湖沼、海浜、海水域などの土地利用が分類されています。</p>
+<p>本サイトでは、この分類を建設コストの簡易算定などに使用しています。</p>
+<p class="source">出典：国土交通省 国土数値情報「土地利用細分メッシュデータ」<br/>
+<a href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-L03-b-2021.html" rel="noopener noreferrer" target="_blank">https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-L03-b-2021.html</a></p>
+<h3 id="dem-data">2-3. 標高</h3>
+<p>市区町村名の判定は、2020年の行政区域データを簡略化して同梱し、端末内で行います。対象は福岡・佐賀・長崎・熊本の4県です。詳細住所や厳密な境界判定には対応していません。出典・加工内容は<a href="./data/README.md">データ一覧</a>、外部通信と共有URLの扱いは<a href="./privacy.html">プライバシー・共有時の注意</a>をご覧ください。</p>
+<p>標高には、国土地理院が公開している <strong>標高タイル（DEM）</strong> を使用しています。</p>
+<p>ルート上の各地点について標高タイルから値を読み取り、断面図の作成やトンネル・高架などの判定に使用しています。</p>
+<p class="source">出典：国土地理院「標高タイル」<br/>
+<a href="https://maps.gsi.go.jp/development/demtile.html" rel="noopener noreferrer" target="_blank">https://maps.gsi.go.jp/development/demtile.html</a></p>
+<h3 id="tourism-data">2-4. 観光地</h3>
+<p>観光アクセスの算定に使用する観光資源の選定方法や重み付けについては、<a href="#tourism-index">「3-3. 観光アクセス」</a>で説明しています。</p>
+<h3 id="basemap">2-5. 背景地図</h3>
+<p>背景地図には <strong>OpenStreetMap</strong> を使用しています。</p>
+<p>© OpenStreetMap contributors</p>
+<p><a href="https://www.openstreetmap.org/" rel="noopener noreferrer" target="_blank">https://www.openstreetmap.org/</a></p>
+<h3 id="existing-lines">2-6. 既存駅・既存線</h3>
+<p>既存の新幹線駅および既存線の位置については、OpenStreetMap等の地図情報を参考に、作成者が緯度・経度をデータとして作成しています。</p>
+<p>そのため、測量成果や鉄道事業者が公開する正式な線路中心座標とは一致しない場合があります。</p>
+<h2 id="indicators">3. 各指標の算出方法</h2>
+<h3 id="population-index">3-1. 沿線人口</h3>
+<p>沿線人口は、作成したルートによって<strong>新幹線で新たに博多へ直通する区間</strong>について、駅周辺の人口を集計したものです。</p>
+<h4>算定方法</h4>
+<p>作成したルート上の各駅と、ルート上で通過扱いとなる既存新幹線駅について、<strong>駅から半径5km以内</strong>にある500m人口メッシュを抽出します。</p>
+<p>500mメッシュは、緯度方向15秒（1/240度）、経度方向22.5秒（1/160度）の大きさで管理しています。本サイトでは、各メッシュの<strong>中心点</strong>と駅との距離を計算し、中心点が駅から5km以内にある場合、そのメッシュの人口全体を沿線人口に加えます。</p>
+<p>複数の駅の5km圏が重なり、同じ人口メッシュが複数の駅から対象となる場合でも、そのメッシュの人口は<strong>1回だけ</strong>集計します。このため、駅を近接して設置しても、同じ地域の人口が重複して加算されることはありません。</p>
+<p>なお、5km圏の境界付近では、500mメッシュの一部だけが範囲内に含まれる場合があります。本サイトでは人口を面積に応じて按分することはせず、<strong>メッシュの中心点が5km以内にあるかどうか</strong>で、そのメッシュ全体を集計するかを判定しています。</p>
+<p>また、本サイトの「沿線人口」は、線路そのものの周辺人口を集計したものではありません。人口の多い地域を線路が通過していても、その付近に駅がなければ沿線人口には加算されません。</p>
+<p>半径5kmという範囲は、異なるルートや駅配置を同じ条件で比較するために本サイトで設定したものです。実際の新幹線駅の利用圏や駅勢圏を5kmと定義するものではなく、実際の利用者数や需要を直接推計するものでもありません。</p>
+<p class="draft-note">※ 沿線人口のレーダーチャート上の点数化方法は、指標設計の確定後に追記予定です。</p>
+<h3 id="cost-index">3-2. 建設コスト</h3>
+<p>本サイトでは、建設コストを<strong>絶対額ではなく「コスト指数」</strong>として表示します。まず指数の意味を示し、その後に内部コストの算定方法を説明します。</p>
+
+<h4>コスト指数の意味</h4>
+<p>画面上の建設コストは、実際の事業費の推計額ではなく、基準ルートを100とした<strong>「コスト指数」</strong>で表示します。数値が100より大きいほど基準ルートより高コスト、100より小さいほど低コストとなる計算です。</p>
+<p>基準ルートは次のとおりです。</p>
+<p class="no-indent"><strong>武雄温泉駅 → 現在の佐賀駅 → 新鳥栖駅</strong><br>（各駅間を直線で結び、現在の佐賀駅位置に新設新幹線駅を1駅設置）</p>
+<p>この基準ルートを、後述する2026年価格への補正を含む現在の計算方法で再計算した内部コスト<strong>約2,903億円</strong>（指数計算には丸め前の290,267,879,653円）を基準値として固定しています。</p>
+<p class="formula">コスト指数 ＝ 作成したルートの内部コスト ÷ 基準ルートの内部コスト × 100</p>
+<p>最終的に整数へ丸めて表示します。例えば、基準ルートと同じ内部コストなら100、1.2倍なら120、0.8倍なら80となります。</p>
+<details class="explain"><summary>なぜ絶対額ではなく指数で表示するのか</summary><div class="detail-body">
+<p>本サイトの計算は、実際の事業費を決めるすべての条件を扱うものではありません。構造物系の単価には2018年度価格の資料を使用し、後述する共通倍率で2026年相当へ補正していますが、工種ごとの価格変動や個別の施工条件まで反映したものではありません。</p>
+<p>そのため、内部では円換算して計算しますが、「このルートは○○億円で建設できる」という絶対額では表示せず、同じ簡易モデルの中でルート差を比較する指数として表示しています。</p>
+<p>基準ルートは比較のために設定したもので、推奨ルートや正式な計画案を意味するものではありません。</p>
+</div></details>
+
+<h4>内部コストの算定方法</h4>
+<p>内部では、ルートを細かな区間に分け、<strong>構造・共通設備・土地利用・市街地の土地や建物・新設駅</strong>のコストを積み上げて算定します。</p>
+
+<div class="method-grid cost-flow">
+  <strong>① 構造</strong><span>地上・高架・山岳トンネルを判定し、構造別のコストを加算</span>
+  <strong>② 共通設備</strong><span>軌道・電気設備等の共通コストと、明かり区間の防音壁費を加算</span>
+  <strong>③ 土地利用</strong><span>地上・高架区間では、土地利用に応じた追加コストを加算</span>
+  <strong>④ 市街地</strong><span>建物用地では、人口密度から土地取得費と建物等のコストを推定</span>
+  <strong>⑤ 新設駅</strong><span>新設駅1駅ごとに駅建設コストを加算</span>
+</div>
+
+<h4>構造による基本コスト</h4>
+<p>各区間について、地表面の高さと計画高を比較して地上・高架・山岳トンネルを判定し、次の構造コストを使用します。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>構造</th><th style="text-align:right">参考工事単価</th><th style="text-align:right">構造コスト</th></tr></thead>
+<tbody>
+<tr><td>地上（土構造）</td><td style="text-align:right">15億円/km</td><td style="text-align:right">100</td></tr>
+<tr><td>高架</td><td style="text-align:right">30億円/km</td><td style="text-align:right">200</td></tr>
+<tr><td>山岳トンネル</td><td style="text-align:right">33億円/km</td><td style="text-align:right">220</td></tr>
+<tr><td>橋梁（参考）</td><td style="text-align:right">66億円/km</td><td style="text-align:right">440</td></tr>
+</tbody></table></div>
+<p>路盤（土構造）15億円/kmを100としているため、<strong>1ポイント＝1,500万円/km</strong>に相当します。橋梁440は、水域を通過する場合の追加コストを設定するための参考値として使用します。</p>
+<details class="explain"><summary>この設定にした理由・補足</summary><div class="detail-body">
+<p>構造別の単価は、羽越・奥羽新幹線関係6県合同プロジェクトチーム「費用対効果等の調査」を参考にしています。同調査では、東北新幹線（八戸～新青森間）、九州新幹線（博多～新八代間）、北陸新幹線（長野～金沢間）の工事実績等をもとに、2018年度価格として構造別の工事単価が整理されています。</p>
+<p>本サイトで扱うトンネルは山岳トンネルを想定しています。都市部の地下トンネルや大深度地下など、施工条件が大きく異なるトンネルはこの区分では扱っていません。</p>
+<p class="source">参考：羽越・奥羽新幹線関係6県合同プロジェクトチーム「費用対効果等の調査」<br><a href="https://www.ou-uetsu-shinkansen.jp/wp-content/themes/ou-uetsu-shinkansen/img/pdf/4_project_result.pdf" rel="noopener noreferrer" target="_blank">資料を開く</a></p>
+</div></details>
+
+<h4>2018年度から2026年への物価補正</h4>
+<p>構造物系の参考単価は2018年度価格であるため、国土交通省「建設工事費デフレーター」の<strong>その他土木・鉄道軌道</strong>を使い、2026年相当へ補正しています。</p>
+<p>2020年度基準の指数について、2018年度平均は98.1083、2026年4～6月平均は129.0667です。本サイトでは月ごとの振れを抑えるため、2026年は公表済み3か月の平均を使っています。</p>
+<p class="formula">物価補正倍率 ＝ 129.0667 ÷ 98.1083 ≒ 1.3156</p>
+<p>この倍率を、地上・高架・山岳トンネル、橋梁相当の水域補正、軌道・電気設備・電車線・その他の工事費等、防音壁、新設駅の参考単価部分に一律に掛けます。</p>
+<p>実際には構造物や工種によって価格上昇率は異なりますが、本サイトではルート間の比較を目的とした簡易モデルであるため、建設工事費の変化を共通倍率で補正しています。</p>
+<p>一方、土地価格と建物価値は2026年時点の評価式・データとして扱っているため、この倍率を掛けません。建設工事費デフレーター自体も用地費と補償費を対象としていません。</p>
+<p class="source">参考：国土交通省「建設工事費デフレーター」<br><a href="https://www.mlit.go.jp/sogoseisaku/jouhouka/sosei_jouhouka_tk4_000112.html" rel="noopener noreferrer" target="_blank">資料を開く</a></p>
+
+<h4>共通コスト・防音壁</h4>
+<p>地上・高架・トンネルのいずれでも必要となる軌道や電気設備等について、すべての区間に、2018年度価格で<strong>共通コスト126</strong>に相当する費用を加えたうえで物価補正します。</p>
+<p class="formula">18.9億円/km ÷ 15億円/km × 100 = 126</p>
+<p>また、地上・高架の明かり区間には、2018年度価格で防音壁費<strong>0.8億円/km</strong>を加えたうえで物価補正します。トンネル区間には加えません。</p>
+<details class="explain"><summary>共通コスト126の内訳</summary><div class="detail-body">
+<p>参考資料では、1km当たりの費用として、軌道費3.3億円、電気設備費4.3億円、電車線1.0億円、その他の工事費等10.3億円が設定されており、合計18.9億円/kmです。</p>
+<p>構造コストとは別にこの費用を加えることで、構造の違いだけでなく、ルートが長くなることによって軌道や電気設備等の費用が増えることも反映します。</p>
+</div></details>
+
+<h4>土地利用による追加コスト</h4>
+<p>地上・高架区間では、各区間の中点にある土地利用を取得し、次の追加コストを加えます。トンネル区間には原則として土地利用による追加コストを加えません。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>土地利用</th><th style="text-align:right">追加コスト</th></tr></thead>
+<tbody>
+<tr><td>田</td><td style="text-align:right">+5</td></tr>
+<tr><td>その他の農用地</td><td style="text-align:right">+5</td></tr>
+<tr><td>森林</td><td style="text-align:right">+3</td></tr>
+<tr><td>荒地</td><td style="text-align:right">+1</td></tr>
+<tr><td>建物用地</td><td style="text-align:right">別途算定</td></tr>
+<tr><td>道路</td><td style="text-align:right">+15</td></tr>
+<tr><td>鉄道</td><td style="text-align:right">+20</td></tr>
+<tr><td>その他の用地</td><td style="text-align:right">+3</td></tr>
+<tr><td>河川・湖沼</td><td style="text-align:right">+340 × 連続延長倍率</td></tr>
+<tr><td>海浜</td><td style="text-align:right">+3</td></tr>
+<tr><td>海水域</td><td style="text-align:right">+340 × 連続延長倍率</td></tr>
+<tr><td>ゴルフ場</td><td style="text-align:right">+10</td></tr>
+</tbody></table></div>
+<p>これらの値にも、<strong>1ポイント＝1,500万円/km</strong>の換算を使用します。</p>
+<details class="explain"><summary>追加値の考え方</summary><div class="detail-body">
+<p>農地や森林などは、構造コストに比べて小さいものとして固定の追加値にまとめています。道路・鉄道は、既存交通施設との交差や施工上の制約を簡易的に表すため、比較的大きな値としています。</p>
+<p>河川・湖沼と海水域は、橋梁440と地上100との差である<strong>+340</strong>を短距離横断の基本値とします。さらに、連続する水域区間が長いほど、次の倍率を掛けます。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>連続する水域区間</th><th style="text-align:right">倍率</th></tr></thead>
+<tbody>
+<tr><td>0～0.5km</td><td style="text-align:right">1.0倍</td></tr>
+<tr><td>0.5～2km</td><td style="text-align:right">1.0倍から1.5倍へ連続的に増加</td></tr>
+<tr><td>2～5km</td><td style="text-align:right">1.5倍から2.5倍へ連続的に増加</td></tr>
+<tr><td>5km超</td><td style="text-align:right">2.5倍</td></tr>
+</tbody></table></div>
+<p>区間境界でコストが急に跳ね上がらないよう、0.5～2kmと2～5kmでは線形補間します。水域補正は橋梁相当の構造物費として、物価補正倍率も掛けます。</p>
+
+<h4>長距離の水域横断に対する補正</h4>
+<p>本サイトが想定するような、数km規模の海峡を横断する新幹線規格の鉄道単独橋については、国内にそのまま比較できる事例を確認できませんでした。</p>
+<p>そこで参考として、国内の代表的な海峡横断道路橋および道路・鉄道併用橋の規模と建設費を、本サイトの水域区間の試算額とあわせて示します。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>区分</th><th>橋梁・試算条件</th><th style="text-align:right">完成・供用年</th><th style="text-align:right">橋長・水域延長</th><th style="text-align:right">建設費・試算額</th><th style="text-align:right">1km当たりの単純換算</th></tr></thead>
+<tbody>
+<tr><td>道路・鉄道併用橋</td><td>大鳴門橋（鉄道未供用）</td><td style="text-align:right">1985年</td><td style="text-align:right">1.629km</td><td style="text-align:right">約1,100億円</td><td style="text-align:right">約675億円/km</td></tr>
+<tr><td>道路・鉄道併用橋</td><td>瀬戸大橋</td><td style="text-align:right">1988年</td><td style="text-align:right">9.368km</td><td style="text-align:right">約8,200億円</td><td style="text-align:right">約875億円/km</td></tr>
+<tr><td>道路橋</td><td>明石海峡大橋</td><td style="text-align:right">1998年</td><td style="text-align:right">3.911km</td><td style="text-align:right">約5,000億円</td><td style="text-align:right">約1,278億円/km</td></tr>
+<tr><td>道路橋</td><td>多々羅大橋</td><td style="text-align:right">1999年</td><td style="text-align:right">1.480km</td><td style="text-align:right">約900億円</td><td style="text-align:right">約608億円/km</td></tr>
+<tr><td>道路橋</td><td>来島海峡大橋</td><td style="text-align:right">1999年</td><td style="text-align:right">4.045km</td><td style="text-align:right">約2,800億円</td><td style="text-align:right">約692億円/km</td></tr>
+<tr><td>本サイトの試算</td><td>水域延長0.5km</td><td style="text-align:right">2026年相当</td><td style="text-align:right">0.5km</td><td style="text-align:right">約56億円</td><td style="text-align:right">約113億円/km</td></tr>
+<tr><td>本サイトの試算</td><td>水域延長2km</td><td style="text-align:right">2026年相当</td><td style="text-align:right">2km</td><td style="text-align:right">約293億円</td><td style="text-align:right">約146億円/km</td></tr>
+<tr><td>本サイトの試算</td><td>水域延長5km</td><td style="text-align:right">2026年相当</td><td style="text-align:right">5km</td><td style="text-align:right">約1,067億円</td><td style="text-align:right">約213億円/km</td></tr>
+<tr><td>本サイトの試算</td><td>水域延長10km</td><td style="text-align:right">2026年相当</td><td style="text-align:right">10km</td><td style="text-align:right">約2,134億円</td><td style="text-align:right">約213億円/km</td></tr>
+</tbody></table></div>
+<p class="source">参考：JB本四高速「本州四国連絡橋について」「本州四国連絡橋のご紹介」<br>
+<a href="https://www.jb-honshi.co.jp/customer_index/guide/faq/qa_bridge.html" rel="noopener noreferrer" target="_blank">建設費等の資料を開く</a> ／ <a href="https://www.jb-honshi.co.jp/corp_index/technology/introduction/" rel="noopener noreferrer" target="_blank">橋梁諸元の資料を開く</a></p>
+<p class="source">参考：鉄道・運輸機構「長大鉄道橋における混合構造適用の検討」<br>
+<a href="https://www.jrtt.go.jp/construction/asset/giken06-10yokoyama.pdf" rel="noopener noreferrer" target="_blank">資料を開く</a></p>
+<p>上表の実橋の建設費は建設当時の概算額であり、2026年価格への物価補正は行っていません。また、「1km当たりの単純換算」は建設費を橋長で割った参考値であり、標準的な橋梁単価を示すものではありません。</p>
+<p>海上橋では、水深が深い場所や船舶航路を確保する必要がある場所などでは、橋脚を設置できる位置が制約され、橋脚間の支間（スパン）を長くする必要があります。支間が長くなると、橋桁や主塔、ケーブル、基礎などの構造が大規模となり、一般的な河川橋梁などと比べて建設費が高くなる傾向があります。鉄道橋では、列車荷重に加え、高速走行時のたわみや走行安全性なども考慮する必要があります。</p>
+<p>一方、上表の実橋は道路橋または道路・鉄道併用橋であり、本サイトが想定する新幹線規格の鉄道単独橋とは、橋の幅員や構造規模が異なります。また、建設年代、物価水準、水深、地質、船舶航路、橋梁形式、耐風・耐震条件、事業費に含まれる範囲などもそれぞれ異なります。さらに、材料、設計、施工技術も建設当時から進歩しているため、過去の実橋の建設費を単純に現在の鉄道橋へ当てはめることはできません。</p>
+<p>このため、本サイトでは実橋の建設費から長大橋の単価を直接推計するのではなく、短い河川横断と数kmに及ぶ海上横断を同じ単価で評価しないことを目的として、独自の連続延長倍率を設定しています。</p>
+<p>この<strong>2.5倍</strong>という値は、実際の長大橋事業費を再現するものではありません。過去の海峡横断橋の建設費と比較すると、本サイトの算定額はなお低い水準となりますが、鉄道単独橋との構造規模の違いや建設年代の違い、近年の技術進歩などを考慮すると、過去の実橋単価をそのまま適用することも適切ではないと考えました。</p>
+<p>そこで本サイトでは、長距離の海上横断による費用増を明確に反映しつつ、過去の大規模海峡横断橋の建設費をそのまま適用しない、<strong>比較用モデルとしてやや低めの補正値</strong>として2.5倍を設定しています。</p>
+<p>なお、高架区間が水域を通る場合は高架の構造費に水域補正を加えるなど、水域上の橋梁形式や基礎形式を厳密に判定しているわけではありません。これらは公的な標準単価ではなく、長距離の海上ルートが明確に高コストとなる性質を表すための比較用補正です。</p>
+</div></details>
+
+<h4>建物用地のコスト</h4>
+<p>建物用地では、地点周辺の人口密度 <strong>D（人/km²）</strong>から土地価格と建物価値の代理値を求めます。</p>
+<p class="formula">推定土地価格 P(D) = 30,000 + 5D + 0.001D² （円/㎡）</p>
+<p>用地幅を16mと仮定し、土地取得費を次のように算定します。</p>
+<p class="formula">土地取得費 ＝ P(D) × 16m × 区間延長</p>
+<p>建物については、宅地1㎡当たりの上物価値の代理値を次の式で求めます。</p>
+<p class="formula">B(D) = 5,000 + 0.5D + 0.0001D² （円/㎡）</p>
+<p>さらに、解体・移転等を簡易的に反映するため1.5倍し、次のように加算します。</p>
+<p class="formula">建物・解体・移転等コスト ＝ B(D) × 16m × 区間延長 × 1.5</p>
+<details class="explain"><summary>人口密度から推定する理由・式の作り方</summary><div class="detail-body">
+<p>土地価格の式 P(D) は、公的な地価算定式ではありません。地方都市では比較的緩やかに、高密度な市街地では土地価格が大きく上昇するよう、本サイト独自に設定した近似式です。</p>
+<p>建物価値 B(D) の検討には、福岡県29市、佐賀県10市、長崎市の計40市の固定資産統計を使用しました。宅地人口密度と宅地1㎡当たりの家屋評価額を二次回帰すると、B(D) ≒ 5,051 + 0.427D + 0.000110D²となり、計算を分かりやすくするため上記の式に丸めています。丸めた式でも、分析した40市に対する決定係数は約0.89でした。</p>
+<p>1.5倍は公式な補償倍率ではなく、上物価値だけでは表しにくい解体・撤去・移転等の負担を比較用モデルに反映するための補正です。</p>
+<p>なお、回帰分析で使った人口密度と、本サイトで地点ごとに求める人口密度は定義が完全には一致しないため、統計的に厳密な建物価値推定式ではありません。</p>
+<p class="source">参考資料：<br>福岡県「固定資産の価格等の概要調書」 <a href="https://www.pref.fukuoka.lg.jp/gyosei-shiryo/gaiyoutyousyo07.html" rel="noopener noreferrer" target="_blank">資料を開く</a><br>佐賀県「固定資産の価格等の概要調書」 <a href="https://www.pref.saga.lg.jp/kiji003112198/index.html" rel="noopener noreferrer" target="_blank">資料を開く</a><br>長崎市「固定資産概要調書」 <a href="https://www.city.nagasaki.lg.jp/page/2539.html" rel="noopener noreferrer" target="_blank">資料を開く</a></p>
+</div></details>
+
+<h4>新設駅のコスト</h4>
+<p>新設駅1駅につき、2018年度価格で<strong>31.36億円</strong>を算定し、物価補正後の<strong>約41.26億円</strong>を内部コストに加えます。通常の操作で追加した駅は新設駅として数え、線形調整用の中間点（曲線点）は数えません。</p>
+<p>武雄温泉駅と新鳥栖駅は初期位置のままであれば既存駅として扱います。元の位置から5mを超えて移動した場合は新設駅として扱い、元の位置に戻せば再び既存駅扱いとなります。</p>
+<details class="explain"><summary>新設駅コストの算定方法</summary><div class="detail-body">
+<p>参考資料の2面2線駅を基準とし、駅部高架橋51億円/km、ホーム2.7億円/駅、駅舎22.9億円/駅を使用しています。駅部高架橋の延長は、西九州新幹線の6両編成を想定して160mと仮定しています。</p>
+<p>ルート本体ですでに通常の地上構造費15億円/kmを計上しているため、駅部高架橋は差額だけを追加します。</p>
+<p class="formula">（51 − 15）億円/km × 0.16km ＝ 5.76億円</p>
+<p class="formula">5.76 + 2.7 + 22.9 ＝ 31.36億円</p>
+<p class="formula">31.36億円 × 1.3156 ≒ 41.26億円</p>
+<p>ホーム2.7億円/駅は参考資料上8両編成・1線210mを前提とした値ですが、本サイトでは減額補正せず参考値をそのまま使用しています。2面4線の追越し設備などは扱いません。</p>
+</div></details>
+
+<h3 id="tourism-index">3-3. 観光アクセス</h3>
+<p>観光アクセスは、設定した駅から周辺の主要な観光資源へどの程度アクセスしやすいかを表す指標です。</p>
+<h4>対象とする観光資源</h4>
+<p>佐賀県・長崎県・福岡県西部などを中心に、地域を代表する観光地や、地域外からの来訪目的となり得る観光資源をあらかじめ選定しています。</p>
+<p>選定にあたっては、主に次の点を考慮しています。</p>
+<ul>
+<li>地域外からの旅行目的となり得るか</li>
+<li>その地域を代表する観光資源であるか</li>
+<li>新幹線のルートや駅の位置によってアクセスのしやすさが変化するか</li>
+<li>近接する観光地を重複して評価しすぎないか</li>
+</ul>
+<p>そのため、すべての観光施設や名所を網羅することを目的とはしていません。同じ駅からほぼ同時にアクセスできる複数の観光資源については、代表的なものにまとめている場合があります。</p>
+<p>また、観光資源が一定の範囲に広がっている場合は、その観光の中心となる場所などに代表地点を設定し、その地点までの距離を用いて計算します。</p>
+<h4>観光ポイント</h4>
+<p>対象となる観光資源には、広域的な集客力や地域を代表する度合いなどをもとに、計算用の観光ポイントを設定しています。</p>
+<ul>
+<li>主要な観光資源：3ポイント</li>
+<li>地域を代表する観光資源：2ポイント</li>
+<li>その他の対象観光資源：1ポイント</li>
+</ul>
+<p>このポイントは、観光地そのものの価値や優劣を評価するものではありません。新幹線のルートや駅配置による観光アクセスの違いを計算するための簡易的な重み付けです。</p>
+<details class="explain">
+<summary>対象観光資源と観光ポイントを見る</summary>
+<div class="detail-body">
+<p>以下は、観光アクセスの計算に使用している対象観光資源と観光ポイントです。観光ポイントは、観光地そのものの価値や優劣を示すものではなく、このサイトの観光アクセス指標を計算するための重み付けです。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>対象観光資源</th><th style="text-align:right">観光ポイント</th></tr></thead>
+<tbody>
+<tr><td>吉野ヶ里歴史公園</td><td style="text-align:right">3ポイント</td></tr>
+<tr><td>嬉野温泉</td><td style="text-align:right">3ポイント</td></tr>
+<tr><td>唐津・唐津城</td><td style="text-align:right">3ポイント</td></tr>
+<tr><td>呼子・朝市</td><td style="text-align:right">3ポイント</td></tr>
+<tr><td>祐徳稲荷神社</td><td style="text-align:right">3ポイント</td></tr>
+<tr><td>有田・有田焼</td><td style="text-align:right">3ポイント</td></tr>
+<tr><td>ハウステンボス</td><td style="text-align:right">3ポイント</td></tr>
+<tr><td>九十九島・九十九島パールシーリゾート</td><td style="text-align:right">3ポイント</td></tr>
+<tr><td>桜井二見ヶ浦</td><td style="text-align:right">3ポイント</td></tr>
+<tr><td>平戸城・平戸市街</td><td style="text-align:right">3ポイント</td></tr>
+<tr><td>武雄温泉</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>御船山楽園</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>虹の松原</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>七ツ釜</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>佐賀インターナショナルバルーンフェスタ</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>佐賀城・佐賀城本丸歴史館</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>伊万里・大川内山</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>浜野浦の棚田</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>西海橋</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>三川内焼の里</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>佐世保港・軍港エリア</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>針尾送信所</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>芥屋の大門</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>土谷棚田</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>鷹島・元寇遺跡</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>春日集落</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>生月島・大バエ灯台</td><td style="text-align:right">2ポイント</td></tr>
+<tr><td>三重津海軍所跡</td><td style="text-align:right">1ポイント</td></tr>
+<tr><td>肥前浜宿</td><td style="text-align:right">1ポイント</td></tr>
+<tr><td>太良・竹崎</td><td style="text-align:right">1ポイント</td></tr>
+<tr><td>玄海海中展望塔</td><td style="text-align:right">1ポイント</td></tr>
+<tr><td>展海峰</td><td style="text-align:right">1ポイント</td></tr>
+<tr><td>弓張岳展望台</td><td style="text-align:right">1ポイント</td></tr>
+<tr><td>黒島</td><td style="text-align:right">1ポイント</td></tr>
+<tr><td>神崎鼻</td><td style="text-align:right">1ポイント</td></tr>
+<tr><td>白糸の滝</td><td style="text-align:right">1ポイント</td></tr>
+</tbody>
+</table></div>
+</div>
+</details>
+<h4>駅から観光地までの距離</h4>
+<p>各観光資源について、設定した駅のうち最も近い駅から代表地点までの直線距離を求め、観光ポイントに次の距離倍率を掛けます。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>最寄り駅からの距離</th><th style="text-align:right">距離倍率</th></tr></thead>
+<tbody>
+<tr><td>1km以内</td><td style="text-align:right">150%</td></tr>
+<tr><td>1km超～5km以内</td><td style="text-align:right">100%</td></tr>
+<tr><td>5km超～10km以内</td><td style="text-align:right">50%</td></tr>
+<tr><td>10km超</td><td style="text-align:right">0%</td></tr>
+</tbody></table></div>
+<p>同じ観光資源が複数の駅の評価範囲に入る場合でも、最寄り駅との距離倍率を1回だけ適用し、重複して加算しません。</p>
+<p>道路距離やバス・鉄道などの実際の移動時間は使用していません。そのため、この指標は実際の観光地への所要時間を再現するものではなく、駅と観光資源との位置関係を簡易的に評価するものです。</p>
+<h4>観光アクセス点の算出</h4>
+<p>距離倍率を掛けた観光ポイントをすべて合計し、<strong>25観光ポイントを100点</strong>として換算します。</p>
+<p class="formula">観光アクセス点 ＝ 距離補正後の観光ポイント ÷ 25 × 100</p>
+<p>計算結果が100点を超える場合は100点とし、最終的な点数は整数に丸めて表示します。</p>
+<p>例えば、合計10ポイント分の観光資源がすべて駅から1～5kmなら40点、すべて1km以内なら60点、すべて5～10kmなら20点となります。</p>
+<p>25ポイントという基準は、すべての観光資源を取得することを100点としたものではありません。一般的な新幹線ルートでは一定の観光資源にアクセスできる一方、観光アクセスを重視してルートを工夫した場合にはより高い点数を得られるよう、複数のルートを試算したうえで設定した基準値です。</p>
+<p>したがって100点は「すべての観光地へアクセスできる」ことを意味するのではなく、<strong>観光アクセスを特に重視した駅配置になっていることを示す目安</strong>です。</p>
+<h3 id="development-index">3-4. 駅周辺の開発余地</h3>
+<p>開発余地は、新しく設置した駅の周辺に、新たな市街地の形成や既成市街地の再開発・高度利用を行う余地がどの程度あるかを表す指標です。</p>
+<p>本サイトでは、新設駅から半径1km以内の土地利用を調べ、次の係数で面積を集計します。</p>
+<ul>
+<li>田：1.0</li>
+<li>その他の農用地：1.0</li>
+<li>荒地：1.0</li>
+<li>建物用地：0.2</li>
+</ul>
+<p>建物用地は、田・農用地・荒地と同じ面積でも0.2倍として加算します。これは既成市街地にも再開発や高度利用の可能性がある一方、人口指標との重複や既存建物・権利関係による制約を考慮し、低い比率で反映するためです。</p>
+<p>複数の新設駅がある場合は、それぞれの駅周辺にある係数適用後の面積を合計します。ただし、駅同士の1km圏が重なっている場合、同じ土地利用メッシュを重複して数えることはありません。</p>
+<p>武雄温泉駅・新鳥栖駅など既存新幹線駅の周辺は、初期位置のままなら対象に含めません。一方、佐賀駅など現在の在来線駅の位置に新幹線駅を追加した場合は、本サイト上の新設駅として対象に含めます。</p>
+<p>また、森林は対象に含めていません。森林を宅地などに転換する場合は造成等が必要となり、田や農地などと同じ条件で単純に「開発可能」と評価することが難しいためです。</p>
+<p>レーダーチャートの点数は、土地利用別の係数を掛けた換算面積をもとに算出します。半径1kmの円の面積がおよそ3.14km²であることから、換算面積の合計が3.14km²となった場合を100点としています。</p>
+<p class="formula">開発余地スコア = min(100, 係数適用後の換算面積 ÷ 3.14 × 100)</p>
+<p>例えば、田などの対象土地が1.0km²、建物用地が1.0km²なら、換算面積は1.0＋1.0×0.2＝1.2km²となり、約38点です。</p>
+<p>なお、この指標は実際にその土地を開発または再開発できることを示すものではありません。本サイトでは、公開されている土地利用データから確認できる「新駅周辺の土地の余地」を簡易的に比較しています。実際の開発に必要となるその他の条件については、<a href="#limitations">「4. 本サイトでは考慮していない主な要素」</a>にまとめています。</p>
+<h2 id="limitations">4. 本サイトでは考慮していない主な要素</h2>
+<p>実際に新幹線のルートや駅位置を検討する場合には、本サイトで扱っている項目以外にも、多数の条件を検討する必要があります。本サイトで十分に考慮していない主な要素を、大きく分けると次のとおりです。</p>
+<ul>
+<li><strong>地質・施工条件：</strong>地質・地盤、断層・地下水、都市地下トンネル、河川・道路との詳細な交差、橋梁形式、施工方法、建設工期など</li>
+<li><strong>用地・制度上の条件：</strong>用地取得の実現可能性、詳細な移転補償、都市計画・土地利用規制、農地・森林等に関する法規制など</li>
+<li><strong>環境・防災上の条件：</strong>自然環境・生活環境、文化財、災害リスク、騒音・振動対策など</li>
+<li><strong>需要・運行条件：</strong>詳細な需要予測、実際の列車運行計画など</li>
+<li><strong>施設計画：</strong>駅施設、車両基地、追越し設備などの詳細な仕様</li>
+<li><strong>事業スキーム：</strong>事業費の負担割合や事業採算性など</li>
+</ul>
+<p>したがって、本サイトで表示される距離、所要時間、人口、建設コストその他の指標は、<strong>公開データから比較的簡易に算出できる情報を用いて、ルートごとの特徴を比較するための参考値</strong>です。</p>
+<p>実際の鉄道計画、事業費、施工可能性、事業効果などを示すものではありません。</p>
+
+  </main>
+</body>
+</html>

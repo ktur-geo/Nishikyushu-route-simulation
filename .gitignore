@@ -1,0 +1,15 @@
+# OS / エディタ
+.DS_Store
+.vscode/
+
+# ビルド成果物
+dist/
+build/
+
+# 依存物（使っていれば）
+node_modules/
+
+# ログ・一時
+*.log
+.cache/
+/raw_data/

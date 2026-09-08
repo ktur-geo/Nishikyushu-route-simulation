@@ -1,0 +1,290 @@
+[
+  {
+    "id": "yoshinogari",
+    "name": "吉野ヶ里歴史公園",
+    "rank": "S",
+    "lat": 33.32288,
+    "lng": 130.38382,
+    "category": "history"
+  },
+  {
+    "id": "ureshino",
+    "name": "嬉野温泉",
+    "rank": "S",
+    "lat": 33.09604,
+    "lng": 129.98463,
+    "category": "onsen"
+  },
+  {
+    "id": "karatsu-castle",
+    "name": "唐津・唐津城",
+    "rank": "S",
+    "lat": 33.45353,
+    "lng": 129.97818,
+    "category": "history"
+  },
+  {
+    "id": "yobuko",
+    "name": "呼子・朝市",
+    "rank": "S",
+    "lat": 33.5426,
+    "lng": 129.8951,
+    "category": "food"
+  },
+  {
+    "id": "yutoku-inari",
+    "name": "祐徳稲荷神社",
+    "rank": "S",
+    "lat": 33.06498,
+    "lng": 130.10809,
+    "category": "history"
+  },
+  {
+    "id": "arita",
+    "name": "有田・有田焼",
+    "rank": "S",
+    "lat": 33.183,
+    "lng": 129.883,
+    "category": "culture"
+  },
+  {
+    "id": "huis-ten-bosch",
+    "name": "ハウステンボス",
+    "rank": "S",
+    "lat": 33.086,
+    "lng": 129.79,
+    "category": "leisure"
+  },
+  {
+    "id": "kujukushima",
+    "name": "九十九島・九十九島パールシーリゾート",
+    "rank": "S",
+    "lat": 33.16167,
+    "lng": 129.67968,
+    "category": "nature"
+  },
+  {
+    "id": "sakurai-futamigaura",
+    "name": "桜井二見ヶ浦",
+    "rank": "S",
+    "lat": 33.63954,
+    "lng": 130.1979,
+    "category": "nature"
+  },
+  {
+    "id": "hirado-castle-town",
+    "name": "平戸城・平戸市街",
+    "rank": "S",
+    "lat": 33.36854,
+    "lng": 129.55757,
+    "category": "history"
+  },
+  {
+    "id": "takeo-onsen",
+    "name": "武雄温泉",
+    "rank": "A",
+    "lat": 33.1958,
+    "lng": 130.01553,
+    "category": "onsen"
+  },
+  {
+    "id": "mifuneyama-rakuen",
+    "name": "御船山楽園",
+    "rank": "A",
+    "lat": 33.18162,
+    "lng": 130.01792,
+    "category": "nature"
+  },
+  {
+    "id": "nijinomatsubara",
+    "name": "虹の松原",
+    "rank": "A",
+    "lat": 33.45015,
+    "lng": 130.03505,
+    "category": "nature"
+  },
+  {
+    "id": "nanatsugama",
+    "name": "七ツ釜",
+    "rank": "A",
+    "lat": 33.54639,
+    "lng": 129.93194,
+    "category": "nature"
+  },
+  {
+    "id": "balloon-festa",
+    "name": "佐賀インターナショナルバルーンフェスタ",
+    "rank": "A",
+    "lat": 33.25758,
+    "lng": 130.24636,
+    "category": "event"
+  },
+  {
+    "id": "saga-castle",
+    "name": "佐賀城・佐賀城本丸歴史館",
+    "rank": "A",
+    "lat": 33.244,
+    "lng": 130.302,
+    "category": "history"
+  },
+  {
+    "id": "okawachiyama",
+    "name": "伊万里・大川内山",
+    "rank": "A",
+    "lat": 33.23534,
+    "lng": 129.89291,
+    "category": "culture"
+  },
+  {
+    "id": "hamanoura-tanada",
+    "name": "浜野浦の棚田",
+    "rank": "A",
+    "lat": 33.474,
+    "lng": 129.853,
+    "category": "nature"
+  },
+  {
+    "id": "saikai-bridge",
+    "name": "西海橋",
+    "rank": "A",
+    "lat": 33.05323,
+    "lng": 129.758,
+    "category": "nature"
+  },
+  {
+    "id": "mikawachiyaki",
+    "name": "三川内焼の里",
+    "rank": "A",
+    "lat": 33.147,
+    "lng": 129.811,
+    "category": "culture"
+  },
+  {
+    "id": "sasebo-port",
+    "name": "佐世保港・軍港エリア",
+    "rank": "A",
+    "lat": 33.16258,
+    "lng": 129.72261,
+    "category": "history"
+  },
+  {
+    "id": "hariyosending-station",
+    "name": "針尾送信所",
+    "rank": "A",
+    "lat": 33.0667,
+    "lng": 129.75163,
+    "category": "history"
+  },
+  {
+    "id": "keya-no-oto",
+    "name": "芥屋の大門",
+    "rank": "A",
+    "lat": 33.59666,
+    "lng": 130.10756,
+    "category": "nature"
+  },
+  {
+    "id": "doya-tanada",
+    "name": "土谷棚田",
+    "rank": "A",
+    "lat": 33.38972,
+    "lng": 129.81639,
+    "category": "nature"
+  },
+  {
+    "id": "takashima-genko",
+    "name": "鷹島・元寇遺跡",
+    "rank": "A",
+    "lat": 33.42694,
+    "lng": 129.77222,
+    "category": "history"
+  },
+  {
+    "id": "kasuga-village",
+    "name": "春日集落",
+    "rank": "A",
+    "lat": 33.33944,
+    "lng": 129.44389,
+    "category": "culture"
+  },
+  {
+    "id": "ikitsuki-obae-lighthouse",
+    "name": "生月島・大バエ灯台",
+    "rank": "A",
+    "lat": 33.43972,
+    "lng": 129.43012,
+    "category": "nature"
+  },
+  {
+    "id": "mietsu-naval-dock",
+    "name": "三重津海軍所跡",
+    "rank": "B",
+    "lat": 33.2071,
+    "lng": 130.3394,
+    "category": "history"
+  },
+  {
+    "id": "hizen-hamashuku",
+    "name": "肥前浜宿",
+    "rank": "B",
+    "lat": 33.09231,
+    "lng": 130.11618,
+    "category": "culture"
+  },
+  {
+    "id": "tara-takesaki",
+    "name": "太良・竹崎",
+    "rank": "B",
+    "lat": 33.02,
+    "lng": 130.21,
+    "category": "food"
+  },
+  {
+    "id": "genkai-undersea-tower",
+    "name": "玄海海中展望塔",
+    "rank": "B",
+    "lat": 33.463,
+    "lng": 129.861,
+    "category": "nature"
+  },
+  {
+    "id": "tenkaibou",
+    "name": "展海峰",
+    "rank": "B",
+    "lat": 33.13071,
+    "lng": 129.69154,
+    "category": "nature"
+  },
+  {
+    "id": "yumiharidake",
+    "name": "弓張岳展望台",
+    "rank": "B",
+    "lat": 33.17999,
+    "lng": 129.70094,
+    "category": "nature"
+  },
+  {
+    "id": "kuroshima",
+    "name": "黒島",
+    "rank": "B",
+    "lat": 33.126,
+    "lng": 129.525,
+    "category": "culture"
+  },
+  {
+    "id": "kanzaki-nose",
+    "name": "神崎鼻",
+    "rank": "B",
+    "lat": 33.208,
+    "lng": 129.552,
+    "category": "nature"
+  },
+  {
+    "id": "shiraito-falls",
+    "name": "白糸の滝",
+    "rank": "B",
+    "lat": 33.48044,
+    "lng": 130.17563,
+    "category": "nature"
+  }
+]

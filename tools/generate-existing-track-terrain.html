@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>既存線地形JSON生成</title>
+  <style>
+    body {
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 0 20px;
+      color: #1f2937;
+      font-family: system-ui, sans-serif;
+      line-height: 1.7;
+    }
+    button {
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 8px;
+      background: #0b4f8a;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled {
+      cursor: wait;
+      opacity: .55;
+    }
+    progress {
+      width: 100%;
+      margin-top: 20px;
+    }
+    #status {
+      min-height: 1.8em;
+      font-weight: 700;
+    }
+    code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: #eef2f7;
+    }
+  </style>
+</head>
+<body>
+  <h1>既存線地形JSON生成</h1>
+  <p>
+    西九州新幹線・九州新幹線の平面線形を100m以下の間隔で標高取得し、
+    公開アプリが直接読めるJSONを生成します。
+  </p>
+  <p>
+    生成後、ダウンロードされた
+    <code>existing-track-terrain-100m.json</code> を
+    <code>data</code> フォルダーへ置いてください。
+  </p>
+  <button id="generate-btn" type="button">
+    既存線地形JSONを生成
+  </button>
+  <progress id="progress" value="0" max="100"></progress>
+  <p id="status" aria-live="polite">待機中</p>
+
+  <script type="module">
+    import {
+      getTerrainElevationsAlongPolyline
+    } from '../script/elevation.js';
+
+    const button = document.getElementById('generate-btn');
+    const progress = document.getElementById('progress');
+    const status = document.getElementById('status');
+
+    function normalizeRoute(raw) {
+      const route = Array.isArray(raw)
+        ? raw
+        : raw?.route ?? raw?.points;
+
+      if (!Array.isArray(route) || route.length < 2) {
+        throw new Error('平面線形JSONを読み込めません。');
+      }
+
+      return route.map(point => ({
+        lat: Number(point.lat),
+        lng: Number(point.lng)
+      }));
+    }
+
+    async function loadRoute(fileName) {
+      const response = await fetch(`../data/${fileName}`);
+      if (!response.ok) {
+        throw new Error(`${fileName}: ${response.status}`);
+      }
+      return normalizeRoute(await response.json());
+    }
+
+    async function sampleRoute(key, label, route) {
+      status.textContent = `${label}の標高を取得しています（0%）`;
+
+      const samples = await getTerrainElevationsAlongPolyline(
+        route,
+        100,
+        {
+          concurrency: 6,
+          onProgress(done, total) {
+            const percent = total > 0
+              ? Math.round(done / total * 100)
+              : 0;
+            progress.value = percent;
+            status.textContent =
+              `${label}の標高を取得しています（${percent}%）`;
+          }
+        }
+      );
+
+      return {
+        key,
+        route_length_m: Number(
+          (samples.at(-1)?.distanceMeters ?? 0).toFixed(3)
+        ),
+        points: samples.map(point => ({
+          route_distance_m: Number(
+            point.distanceMeters.toFixed(3)
+          ),
+          elevation_m: Number.isFinite(point.elevation)
+            ? Number(point.elevation.toFixed(2))
+            : null
+        }))
+      };
+    }
+
+    function downloadJson(value) {
+      const blob = new Blob(
+        [JSON.stringify(value, null, 2) + '\n'],
+        { type: 'application/json' }
+      );
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'existing-track-terrain-100m.json';
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      progress.value = 0;
+
+      try {
+        const [nishikyushuRoute, kyushuRoute] =
+          await Promise.all([
+            loadRoute('nishikyushu-competed-route.json'),
+            loadRoute('kyushu-competed-route.json')
+          ]);
+
+        const nishikyushu = await sampleRoute(
+          'nishikyushu',
+          '西九州新幹線',
+          nishikyushuRoute
+        );
+
+        const kyushu = await sampleRoute(
+          'kyushu',
+          '九州新幹線',
+          kyushuRoute
+        );
+
+        downloadJson({
+          id: 'existing-track-terrain-100m',
+          generated_at: new Date().toISOString(),
+          interval_m: 100,
+          elevation_source: '国土地理院DEM5A（取得不能時はDEM10B）',
+          route_note: '平面線形配列の先頭からの累積距離',
+          routes: {
+            nishikyushu,
+            kyushu
+          }
+        });
+
+        progress.value = 100;
+        status.textContent =
+          '生成完了。ダウンロードしたJSONをdataフォルダーへ置いてください。';
+      } catch (error) {
+        console.error(error);
+        status.textContent = `生成に失敗しました: ${error.message}`;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

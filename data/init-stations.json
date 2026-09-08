@@ -1,0 +1,12 @@
+[
+  {"lat":32.75176633003113, "lng": 129.86921310424808, "name": "長崎","type":"nishikyushu","time":0},
+  {"lat": 32.851, "lng": 130.041, "name": "諫早","type":"nishikyushu","time":8},
+  {"lat": 32.933,  "lng": 129.957, "name": "新大村","type":"nishikyushu","time":16},
+  {"lat": 33.106, "lng": 129.999, "name": "嬉野温泉","type":"nishikyushu","time":24},
+  {"lat": 32.790078, "lng": 130.688642, "name": "熊本","type":"kyushu","time":49},
+    {"lat": 32.942557, "lng": 130.573518, "name": "新玉名","type":"kyushu","time":40},
+  {"lat": 33.071349, "lng": 130.488735, "name": "新大牟田","type":"kyushu","time":32},
+    {"lat": 33.177717, "lng": 130.492444, "name": "筑後船小屋","type":"kyushu","time":25},
+      {"lat": 33.320198, "lng": 130.501256, "name": "久留米","type":"kyushu","time":17},
+  {"lat":33.58938383661381,"lng":130.42067527771, "name": "博多","type":"hakata","time":0}
+]

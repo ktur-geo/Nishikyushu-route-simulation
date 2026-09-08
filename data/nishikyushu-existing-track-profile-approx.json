@@ -1,0 +1,285 @@
+{
+  "id": "nishikyushu-shinkansen-takeoonsen-nagasaki-approx-profile",
+  "line": "西九州新幹線",
+  "section": "武雄温泉－長崎",
+  "route_length_km": 65.998,
+  "data_type": "calibrated_track_elevation_profile",
+  "purpose": "既存線から新設線を分岐する際、DEM地表標高ではなく既存新幹線の概略線路標高を参照するため",
+  "sources": [
+    {
+      "name": "鉄道・運輸機構 西九州新幹線 線路平面図・線路縦断面図",
+      "url": "https://www.jrtt.go.jp/project/Nishikyushu_shinkansen_outline.pdf",
+      "use": "線路縦断面図の赤い線路中心と、0～400m標高目盛を直接デジタイズ"
+    }
+  ],
+  "calibration": {
+    "horizontal": {
+      "overview_image_x_at_0km_px": 104.0,
+      "overview_image_x_at_65_998km_px": 1193.0,
+      "px_per_km": 16.5005,
+      "formula": "distance_km = (overview_image_x_px - 104.0) * 65.998 / (1193.0 - 104.0)"
+    },
+    "vertical": {
+      "overview_image_y_at_0m_px": 818.2,
+      "px_per_m": 0.413,
+      "formula": "elevation_m = (818.2 - overview_image_y_px) / 0.413",
+      "control_ticks_m": [
+        0,
+        100,
+        200,
+        300,
+        400
+      ],
+      "control_tick_y_px": [
+        818,
+        777,
+        736,
+        694,
+        653
+      ],
+      "rounding_m": 0.5,
+      "estimated_overview_reading_uncertainty_m": 3.0
+    },
+    "digitization": {
+      "method": "赤色画素から線路縦断線の中心を列ごとに抽出し、欠損補間・5px中央値処理後、最大偏差0.75pxの折れ線に簡略化",
+      "source_line_color": "red",
+      "simplification_tolerance_px": 0.75
+    }
+  },
+  "accuracy_note": "元図に明示された0～400mの標高目盛を直接用い、赤い線路縦断線の中心を再デジタイズした。標高は0.5m単位で保存するが、元図の線幅と画素数からみた読取り精度は概ね±3mである。0m未満の点は、元図の赤線が標高0m基準線より下に描かれている区間をそのまま換算した。施工設計や厳密な測量標高には使用しない。",
+  "points": [
+    {
+      "distance_km": 0.0,
+      "elevation_m": 20.0
+    },
+    {
+      "distance_km": 0.55,
+      "elevation_m": 20.0
+    },
+    {
+      "distance_km": 2.0,
+      "elevation_m": 27.0
+    },
+    {
+      "distance_km": 2.48,
+      "elevation_m": 35.5
+    },
+    {
+      "distance_km": 4.18,
+      "elevation_m": 54.0
+    },
+    {
+      "distance_km": 5.27,
+      "elevation_m": 45.5
+    },
+    {
+      "distance_km": 6.61,
+      "elevation_m": 54.0
+    },
+    {
+      "distance_km": 7.39,
+      "elevation_m": 55.0
+    },
+    {
+      "distance_km": 7.7,
+      "elevation_m": 50.0
+    },
+    {
+      "distance_km": 8.55,
+      "elevation_m": 45.5
+    },
+    {
+      "distance_km": 9.64,
+      "elevation_m": 47.5
+    },
+    {
+      "distance_km": 10.42,
+      "elevation_m": 56.0
+    },
+    {
+      "distance_km": 11.03,
+      "elevation_m": 56.0
+    },
+    {
+      "distance_km": 12.24,
+      "elevation_m": 62.0
+    },
+    {
+      "distance_km": 13.27,
+      "elevation_m": 74.5
+    },
+    {
+      "distance_km": 14.97,
+      "elevation_m": 86.5
+    },
+    {
+      "distance_km": 16.97,
+      "elevation_m": 132.5
+    },
+    {
+      "distance_km": 17.33,
+      "elevation_m": 132.5
+    },
+    {
+      "distance_km": 19.33,
+      "elevation_m": 125.0
+    },
+    {
+      "distance_km": 21.76,
+      "elevation_m": 64.5
+    },
+    {
+      "distance_km": 22.18,
+      "elevation_m": 67.0
+    },
+    {
+      "distance_km": 23.64,
+      "elevation_m": 96.0
+    },
+    {
+      "distance_km": 24.06,
+      "elevation_m": 93.5
+    },
+    {
+      "distance_km": 25.03,
+      "elevation_m": 81.5
+    },
+    {
+      "distance_km": 26.48,
+      "elevation_m": 52.5
+    },
+    {
+      "distance_km": 28.0,
+      "elevation_m": 14.0
+    },
+    {
+      "distance_km": 28.54,
+      "elevation_m": 12.5
+    },
+    {
+      "distance_km": 29.03,
+      "elevation_m": 20.0
+    },
+    {
+      "distance_km": 29.57,
+      "elevation_m": 20.0
+    },
+    {
+      "distance_km": 31.09,
+      "elevation_m": 37.0
+    },
+    {
+      "distance_km": 32.36,
+      "elevation_m": 37.0
+    },
+    {
+      "distance_km": 33.39,
+      "elevation_m": 28.5
+    },
+    {
+      "distance_km": 34.91,
+      "elevation_m": -10.5
+    },
+    {
+      "distance_km": 35.15,
+      "elevation_m": -8.0
+    },
+    {
+      "distance_km": 36.6,
+      "elevation_m": 28.5
+    },
+    {
+      "distance_km": 37.33,
+      "elevation_m": 40.5
+    },
+    {
+      "distance_km": 38.42,
+      "elevation_m": 37.0
+    },
+    {
+      "distance_km": 39.45,
+      "elevation_m": 38.0
+    },
+    {
+      "distance_km": 40.6,
+      "elevation_m": 62.0
+    },
+    {
+      "distance_km": 42.73,
+      "elevation_m": 38.0
+    },
+    {
+      "distance_km": 43.82,
+      "elevation_m": 31.0
+    },
+    {
+      "distance_km": 44.36,
+      "elevation_m": 16.0
+    },
+    {
+      "distance_km": 44.91,
+      "elevation_m": 18.5
+    },
+    {
+      "distance_km": 45.39,
+      "elevation_m": 16.0
+    },
+    {
+      "distance_km": 45.7,
+      "elevation_m": 26.0
+    },
+    {
+      "distance_km": 45.94,
+      "elevation_m": 28.5
+    },
+    {
+      "distance_km": 46.85,
+      "elevation_m": 25.0
+    },
+    {
+      "distance_km": 47.33,
+      "elevation_m": 28.5
+    },
+    {
+      "distance_km": 50.79,
+      "elevation_m": 74.5
+    },
+    {
+      "distance_km": 51.57,
+      "elevation_m": 74.5
+    },
+    {
+      "distance_km": 54.36,
+      "elevation_m": 64.5
+    },
+    {
+      "distance_km": 55.63,
+      "elevation_m": 33.0
+    },
+    {
+      "distance_km": 56.3,
+      "elevation_m": 33.0
+    },
+    {
+      "distance_km": 57.33,
+      "elevation_m": 40.5
+    },
+    {
+      "distance_km": 58.06,
+      "elevation_m": 62.0
+    },
+    {
+      "distance_km": 60.79,
+      "elevation_m": 72.0
+    },
+    {
+      "distance_km": 64.91,
+      "elevation_m": 14.0
+    },
+    {
+      "distance_km": 65.998,
+      "elevation_m": 12.5
+    }
+  ],
+  "revision_note": "2026-09-02: 旧41点の目視概算値を廃止し、全区間を元図の赤い線路縦断線から再デジタイズ。距離軸は0～65.998km、標高軸は図示された0～400m目盛で直接校正した。"
+}
