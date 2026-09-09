@@ -1,4 +1,5 @@
 import { addPoint, isRouteReadOnly } from "./points.js";
+import { createCurveIcon, bindMarkerDragFeedback } from './curve-markers.js';
 
 let mapInstance = null;
 let baseLayer = null;
@@ -78,6 +79,7 @@ function applyBaseMap() {
 
 export function initMap(){
   mapInstance = L.map('map', { zoomControl: false, minZoom: 5, maxZoom: 20 }).setView([33.3, 130.3], 10);
+  mapInstance.createPane('routeCurvePane').style.zIndex = '590';
   applyBaseMap();
 
   mapInstance.on('zoomend', () => {
@@ -126,6 +128,17 @@ export function drawRouteLayer(latlngs,add=true,color="red"){
   const poly2 = L.polyline(latlngs, { color:lineColor1,interactive: false});
   const poly3 = L.polyline(latlngs, { dashArray:'8', color:lineColor2,interactive: false});
   layer.addLayer(poly1); layer.addLayer(poly2); layer.addLayer(poly3);
+  const handles = [];
+  // ドラッグ中は線だけ更新し、点の作り直しや分析の再計算はしない。
+  layer.updatePreview = coordinates => {
+    for (const line of [poly1, poly2, poly3]) line.setLatLngs(coordinates);
+    if (coordinates.length === latlngs.length) {
+      handles.forEach((handle, i) => handle.setLatLng({
+        lat: (coordinates[i].lat + coordinates[i + 1].lat) / 2,
+        lng: (coordinates[i].lng + coordinates[i + 1].lng) / 2
+      }));
+    }
+  };
 
   for (let i = 0; i < latlngs.length - 1; i++) {
     const midLat = (latlngs[i].lat + latlngs[i + 1].lat) / 2;
@@ -134,24 +147,34 @@ export function drawRouteLayer(latlngs,add=true,color="red"){
     if(add && !isRouteReadOnly()){
       const handle = L.marker(mid, {
         draggable: true,
-        icon: L.divIcon({
-          className: "curve-handle",
-          iconSize: [8, 8],
-        }),
+        pane: 'routeCurvePane',
+        icon: createCurveIcon(true),
       }).addTo(layer);
+      handles.push(handle);
+
+      bindMarkerDragFeedback(handle);
+      handle.on('drag', () => {
+        if (isRouteReadOnly()) return;
+        layer.updatePreview([...latlngs.slice(0, i + 1), handle.getLatLng(), ...latlngs.slice(i + 1)]);
+      });
 
       handle.on("dragend", (e) => {
-        if (isRouteReadOnly()) { handle.setLatLng(mid); return; }
+        if (isRouteReadOnly()) { handle.setLatLng(mid); layer.updatePreview(latlngs); return; }
         const pos = e.target.getLatLng();
 
         // この黒点は「i番目とi+1番目の間」を表しているため、
         // ドラッグ後の位置が元の線分から遠くても、同じ区間へ確実に挿入する。
-        addPoint(pos, {
+        const addedId = addPoint(pos, {
           type: "curve",
           name: "",
           pan: false,
           insertIndex: i + 1,
         });
+        if (addedId == null) {
+          handle.setLatLng(mid);
+          layer.updatePreview(latlngs);
+          return;
+        }
 
         // ルート再描画で旧ハンドルは消えるが、念のため元レイヤーからも外す。
         if (layer.hasLayer(handle)) {

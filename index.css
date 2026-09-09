@@ -1382,8 +1382,6 @@ body.edit-mode .station-item{
 }
 
 .curve{
-  width: 0 !important;
-  height: 0 !important;
   top: 0 !important;
   left: 0 !important;
 }
@@ -1430,8 +1428,8 @@ body.edit-mode .station-item{
   position: absolute;
   width: 10px !important;
   height: 10px !important;
-  top: 0 !important;
-  left: 0 !important;
+  top: 50% !important;
+  left: 50% !important;
   transform: translate(-50%, -50%);
   border: 1px solid rgb(0,0,0);
   border-radius: 0;
@@ -1442,10 +1440,109 @@ body.edit-mode .station-item{
   display: none;
 }
 
-.curve-handle{
-  width: 6px;
-  height: 6px;
+.curve-handle-dot{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%);
   background: black;
+}
+
+.route-curve-marker,
+.route-station-marker{
+  background: transparent;
+  border: 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.route-curve-marker > span{
+  pointer-events: none;
+}
+
+.route-curve-marker::after,
+.route-station-marker::after{
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  transform: translate(-50%, -50%);
+  border: 2px solid #9b1c31;
+  border-radius: 50%;
+  background: rgba(155, 28, 49, 0.08);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.route-station-marker::after{
+  top: 0;
+  left: 0;
+}
+
+.route-curve-marker.is-dragging,
+.route-curve-marker:active,
+.route-station-marker.is-dragging,
+.route-station-marker:active{
+  cursor: grabbing;
+}
+
+.route-curve-marker.is-dragging::after,
+.route-curve-marker:active::after,
+.route-station-marker.is-dragging::after,
+.route-station-marker:active::after{
+  opacity: 1;
+}
+
+.route-curve-marker.is-dragging > span,
+.route-curve-marker:active > span{
+  transform: translate(-50%, -50%) scale(1.4);
+}
+
+.route-station-marker.is-dragging .station-dot,
+.route-station-marker:active .station-dot{
+  transform: scale(1.4);
+}
+
+.route-station-marker.is-dragging::before,
+.route-station-marker:active::before{
+  display: none;
+}
+
+@media (any-pointer: coarse), (max-width: 720px){
+  .route-curve-marker,
+  .route-station-marker{
+    width: 48px !important;
+    height: 48px !important;
+    margin-left: -24px !important;
+    margin-top: -24px !important;
+  }
+
+  /* 駅の点とラベルは、広げた判定領域の中心を基準に表示する。 */
+  .route-station-marker > div{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+  }
+
+  .route-station-marker::after{
+    top: 50%;
+    left: 50%;
+  }
+
+  .route-station-marker:hover::before{
+    display: none;
+  }
+
+  .curve-handle-dot,
+  .curve-dot{
+    width: 9px !important;
+    height: 9px !important;
+  }
 }
 
 .station:hover::before{

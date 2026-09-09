@@ -3,6 +3,7 @@ import { normalizeStationName, isValidCoordinate, MAX_ROUTE_POINTS } from './rou
 // 駅の管理（初回／追加指定時のクリックで駅追加、ドラッグで更新）
 // map.js の getMap() を利用
 import { getMap, drawRouteLayer } from './map.js';
+import { createCurveIcon, bindMarkerDragFeedback, syncCurvePane } from './curve-markers.js';
 import {distancePointToSegment , haversineDistanceMeters ,projectPointOnSegment,findNearestSegment}from './utils.js';
 import { bindStationPopup } from './popup.js';
 import { updateStationList } from './station-list.js';
@@ -524,6 +525,7 @@ export function getInitStations(){
 }
 
 export function stationIcon(type, name) {
+  if (type === 'curve') return createCurveIcon();
   const content = document.createElement('div');
   const dot = document.createElement('div');
   dot.className = type === 'curve' ? 'curve-dot' : 'station-dot';
@@ -534,7 +536,7 @@ export function stationIcon(type, name) {
     label.textContent = normalizeStationName(name);
     content.appendChild(label);
   }
-  return L.divIcon({ className: type, html: content, iconSize: null });
+  return L.divIcon({ className: `${type} route-station-marker`, html: content, iconSize: null });
 }
 
 export function isRouteReadOnly() { return readOnly; }
@@ -993,7 +995,7 @@ export function addPoint(latlng, {type="station",name="",pan=true,strict=false,t
   if ((!strict && readOnly) || !isValidCoordinate(latlng)) return null;
   if (points.length >= MAX_ROUTE_POINTS) { showToast('ルートの点は200個までです。'); return null; }
   name = normalizeStationName(name);
-  const marker = L.marker(latlng, { draggable: !readOnly, icon: stationIcon(type, name) }).addTo(map);
+  const marker = L.marker(latlng, { draggable: !readOnly, pane: type === 'curve' ? 'routeCurvePane' : 'markerPane', icon: stationIcon(type, name) }).addTo(map);
 
   const resolvedTerminalRole =
   terminalRole
@@ -1075,6 +1077,20 @@ const newPoint = {
 
   // 🔹 marker に id を付与（これが重要）
   marker.pointId = newPoint.id;
+
+  bindMarkerDragFeedback(marker);
+  marker.on('drag', () => {
+    if (readOnly) return;
+    // 起終点も確定時と同じ既存線へ合わせ、駅と線のプレビュー位置を揃える。
+    const role = getTerminalRole(newPoint);
+    if (role === 'startStation' || role === 'endStation') {
+      marker.setLatLng(snapToPolyline(marker.getLatLng(),
+        role === 'startStation' ? nishikyushuCompetedRoute : kyushuCompetedRoute));
+    }
+    routeLayer?.updatePreview?.(points.map(point =>
+      point === newPoint ? marker.getLatLng() : point.latlng
+    ));
+  });
 
   // dragend で位置更新
 marker.on(
@@ -1500,6 +1516,7 @@ export async function setPointPassThrough(
 
     // 型の変更時点で古い分析結果を無効化する。
     point.marker?.setIcon(stationIcon(point.type, point.name));
+    if (point.marker) syncCurvePane(point.marker, getMap(), false);
     notifyPointsChanged();
 
 
@@ -1534,6 +1551,8 @@ export async function setPointPassThrough(
 
 
   if (point.marker) {
+
+    syncCurvePane(point.marker, getMap(), point.type === 'curve');
 
     point.marker.setIcon(
       stationIcon(
