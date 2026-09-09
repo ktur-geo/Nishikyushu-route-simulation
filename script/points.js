@@ -367,6 +367,18 @@ function setGuideStep(step) {
     return;
   }
 
+  panel.classList.remove("guide-welcome");
+  const firstAction = document.getElementById("guide-first-action");
+  const startButton = document.getElementById("guide-start-btn");
+  if (firstAction) firstAction.hidden = true;
+  if (startButton) startButton.hidden = true;
+
+  if (step === "place") {
+    title.textContent = "まずは駅を置いてみよう";
+    description.textContent = "地図上の好きな場所をタップしてください";
+    return;
+  }
+
 
   // ========================================
   // ② ルート調整
@@ -1292,6 +1304,14 @@ export function drawRoute(){
 // 初回、または「駅を追加」ボタンを押した直後の地図クリックで駅を追加する。
 export function bindAddByClick(){
   const map = getMap();
+  const startButton = document.getElementById("guide-start-btn");
+  if (startButton) {
+    startButton.disabled = false;
+    startButton.addEventListener("click", () => {
+      setGuideStep("place");
+      map.getContainer().focus();
+    });
+  }
 
   map.on('click', async (ev) => {
     if (readOnly || placementPending) return;

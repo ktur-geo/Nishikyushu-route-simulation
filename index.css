@@ -488,6 +488,54 @@ body{
   min-width: 0;
 }
 
+#guide-panel.guide-panel.guide-welcome{
+  width: min(560px, calc(100% - 32px));
+  padding: 22px;
+  max-height: calc(100dvh - var(--header-h) - 120px);
+  overflow-y: auto;
+}
+
+.guide-welcome .guide-icon{
+  display: none;
+}
+
+.guide-welcome .guide-text h3{
+  font-size: 20px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.guide-welcome .guide-text p{
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+#guide-first-action{
+  margin-top: 12px;
+}
+
+.guide-start{
+  margin-top: 18px;
+  padding: 10px 24px;
+  border: 1px solid #9b1c31;
+  border-radius: 8px;
+  background: #9b1c31;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.guide-start:disabled{
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.guide-start:focus-visible{
+  outline: 2px solid #9b1c31;
+  outline-offset: 3px;
+}
+
 .guide-text h3{
   margin: 0 0 3px;
 
@@ -1654,9 +1702,34 @@ body.mode-edit #side-panels{
     --side-w: min(320px, calc(100vw - 24px));
   }
 
-  /* 長い副題は中間幅では隠し、ヘッダー操作を圧迫しないようにする。 */
+  /* 副題をタイトルの右に置き、操作ボタンの手前で折り返す。 */
+  .header-left{
+    flex: 1;
+    min-width: 0;
+  }
+
+  .header-right{
+    flex-shrink: 0;
+  }
+
+  .header{
+    gap: 8px;
+  }
+
+  .brand{
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .brand-title{
+    flex-shrink: 0;
+  }
+
   .brand-sub{
-    display: none;
+    display: block;
+    min-width: 0;
+    white-space: normal;
+    line-height: 1.3;
   }
 
   .guide-panel{
@@ -1723,7 +1796,8 @@ body.mode-edit #side-panels{
   }
 
   .brand-sub{
-    display: none;
+    font-size: 10px;
+    line-height: 1.2;
   }
 
   .header{
