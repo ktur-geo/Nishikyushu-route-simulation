@@ -1770,6 +1770,21 @@ function routeIsModifiedFromDefault() {
   });
 }
 
+// デスクトップでは評価の説明を常に表示し、スマホでは「＋」から開く。
+function initRouteEvaluationMetricGuide() {
+  const guide = document.querySelector('.route-evaluation-metric-guide');
+  const media = window.matchMedia?.('(max-width: 720px)');
+
+  if (!guide || !media) return;
+
+  const syncGuideVisibility = event => {
+    guide.open = !event.matches;
+  };
+
+  syncGuideVisibility(media);
+  media.addEventListener?.('change', syncGuideVisibility);
+}
+
 //メイン画面のボタンにイベントを付加する関数
 export function bindUIEvents() {
   const reportBtn = document.getElementById('generate-report-btn');
@@ -1898,6 +1913,7 @@ export function bindUIEvents() {
     });
   }
 
+  initRouteEvaluationMetricGuide();
   initMobileBottomSheetDragging();
 }
 

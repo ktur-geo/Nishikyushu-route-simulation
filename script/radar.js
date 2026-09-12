@@ -6,7 +6,7 @@ export function drawRadarChart({ canvasId, scores }) {
   window._radarChart = new Chart(canvas.getContext('2d'), {
     type: 'radar',
     data: {
-      labels: ['沿線人口', 'コスト効率', '時間効率', '観光アクセス', '開発余地'],
+      labels: ['沿線人口', '建設コスト', '所要時間', '観光アクセス', '開発余地'],
       datasets: [{
         label: 'このルート',
         data: scores,

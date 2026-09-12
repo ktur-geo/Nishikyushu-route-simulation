@@ -1223,6 +1223,40 @@ body.edit-mode .station-item{
   min-width: 0;
 }
 
+.route-evaluation-metric-guide{
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.route-evaluation-metric-guide summary{
+  display: none;
+}
+
+.route-evaluation-metric-list{
+  display: grid;
+  gap: 9px;
+  margin: 0;
+}
+
+.route-evaluation-metric-list div{
+  display: grid;
+  gap: 2px;
+}
+
+.route-evaluation-metric-list dt{
+  color: #333;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.route-evaluation-metric-list dd{
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
 
 /* チャート下の共有欄 */
 .evaluation-share-card{
@@ -2572,6 +2606,57 @@ body.mode-edit #side-panels{
   .route-evaluation-heading > p{
     margin-top: 6px;
     text-align: left;
+  }
+
+  .route-evaluation-metric-guide{
+    margin-top: 12px;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.09);
+    border-radius: 12px;
+    background: #fafafa;
+  }
+
+  .route-evaluation-metric-guide summary{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+    padding: 10px 12px;
+    color: #333;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .route-evaluation-metric-guide summary::-webkit-details-marker{
+    display: none;
+  }
+
+  .metric-guide-toggle::before{
+    content: '＋';
+    color: #8d2638;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .route-evaluation-metric-guide[open] .metric-guide-toggle::before{
+    content: '−';
+  }
+
+  .route-evaluation-metric-list{
+    gap: 10px;
+    margin: 0;
+    padding: 0 12px 12px;
+  }
+
+  .route-evaluation-metric-list dt{
+    font-size: 12px;
+  }
+
+  .route-evaluation-metric-list dd{
+    font-size: 11px;
   }
 
   /* レーダーチャートはスマホでは縦並び */
