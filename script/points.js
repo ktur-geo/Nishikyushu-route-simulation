@@ -536,7 +536,15 @@ export function stationIcon(type, name) {
     label.textContent = normalizeStationName(name);
     content.appendChild(label);
   }
-  return L.divIcon({ className: `${type} route-station-marker`, html: content, iconSize: null });
+  // 通過点のアイコンと同じく、座標をアイコンの中心に合わせる。
+  // iconSize / iconAnchor を省略すると、通過点から駅に切り替えた際に
+  // Leaflet の基準点が変わり、見た目の位置がずれてしまう。
+  return L.divIcon({
+    className: `${type} route-station-marker`,
+    html: content,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  });
 }
 
 export function isRouteReadOnly() { return readOnly; }

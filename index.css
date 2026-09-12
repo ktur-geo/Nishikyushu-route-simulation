@@ -6,7 +6,8 @@
 :root{
   --header-h: 48px;
   --side-w: 308px;
-  --dock-h: 340px;
+  /* 標準的なデスクトップ画面では、分析レポート全体を一画面で読める高さ。 */
+  --dock-h: 1000px;
 
   --text: #1f1f1f;
   --muted: #666;
@@ -1463,6 +1464,13 @@ body.edit-mode .station-item{
   pointer-events: none;
 }
 
+/* 駅も通過点と同じく、親アイコンの中心を座標に合わせる。 */
+.route-station-marker > div{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
 .route-curve-marker::after,
 .route-station-marker::after{
   content: '';
@@ -1477,11 +1485,6 @@ body.edit-mode .station-item{
   background: rgba(155, 28, 49, 0.08);
   opacity: 0;
   pointer-events: none;
-}
-
-.route-station-marker::after{
-  top: 0;
-  left: 0;
 }
 
 .route-curve-marker.is-dragging,
@@ -1834,7 +1837,7 @@ body.mode-edit #side-panels{
   }
 
   .report-dock{
-    max-height: 50vh;
+    max-height: calc(100vh - var(--header-h) - 32px);
   }
 
   .report-grid{
@@ -2490,102 +2493,120 @@ body.mode-edit #side-panels{
     padding: 7px 0;
     font-size: 12px;
   }
+}
+
+/* 低いデスクトップ画面では、レポート全体を画面内に収める。 */
+@media (max-height: 820px) and (min-width: 721px){
+  .report-dock{
+    padding: 14px;
+  }
+
+  .report-header{
+    margin-bottom: 10px;
+  }
+
+  .report-grid{
+    gap: 10px;
+  }
+
+  .report-card{
+    padding: 12px;
+  }
+
+  .report-card h3{
+    margin-bottom: 8px;
+  }
+
+  .profile-card-heading{
+    margin-bottom: 8px;
+  }
+
+  .chart-wrap{
+    min-height: 160px;
+    padding: 6px;
+  }
+
+  .chart-wrap canvas{
+    height: 160px;
+  }
+
+  .report-note{
+    margin-top: 6px;
+  }
+}
+
 /* =========================
    Report → Evaluation → Share
    Mobile
    ========================= */
+@media (max-width: 720px){
+  .report-next-step{
+    display: block;
+    padding: 14px;
+  }
 
-.report-next-step{
-  display: block;
+  .report-next-step h3{
+    font-size: 15px;
+  }
 
-  padding: 14px;
-}
+  .route-evaluation-btn{
+    width: 100%;
+    margin-top: 12px;
+  }
 
+  .route-evaluation-panel{
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 16px;
+  }
 
-.report-next-step h3{
-  font-size: 15px;
-}
+  .route-evaluation-heading{
+    display: block;
+    margin-bottom: 10px;
+  }
 
+  .route-evaluation-heading h3{
+    font-size: 15px;
+  }
 
-.route-evaluation-btn{
-  width: 100%;
+  .route-evaluation-heading > p{
+    margin-top: 6px;
+    text-align: left;
+  }
 
-  margin-top: 12px;
-}
+  /* レーダーチャートはスマホでは縦並び */
+  .radar-layout{
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
 
+  .radar-chart-wrap{
+    height: 250px;
+  }
 
-.route-evaluation-panel{
-  margin-top: 10px;
-  padding: 12px;
+  .radar-chart-wrap canvas{
+    height: 250px !important;
+  }
 
-  border-radius: 16px;
-}
+  /* 共有欄 */
+  .evaluation-share-card{
+    display: block;
+    margin-top: 12px;
+    padding: 12px;
+  }
 
+  .evaluation-share-actions{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
 
-.route-evaluation-heading{
-  display: block;
-
-  margin-bottom: 10px;
-}
-
-
-.route-evaluation-heading h3{
-  font-size: 15px;
-}
-
-
-.route-evaluation-heading > p{
-  margin-top: 6px;
-
-  text-align: left;
-}
-
-
-/* レーダーチャートはスマホでは縦並び */
-.radar-layout{
-  grid-template-columns: 1fr;
-
-  gap: 10px;
-}
-
-
-.radar-chart-wrap{
-  height: 250px;
-}
-
-
-.radar-chart-wrap canvas{
-  height: 250px !important;
-}
-
-
-/* 共有欄 */
-.evaluation-share-card{
-  display: block;
-
-  margin-top: 12px;
-  padding: 12px;
-}
-
-
-.evaluation-share-actions{
-  display: grid;
-
-  grid-template-columns: 1fr;
-
-  gap: 8px;
-
-  margin-top: 10px;
-}
-
-
-.evaluation-copy-btn,
-.evaluation-share-btn{
-  width: 100%;
-  min-height: 44px;
-}
-
-
+  .evaluation-copy-btn,
+  .evaluation-share-btn{
+    width: 100%;
+    min-height: 44px;
+  }
 }
 
 /* =========================
