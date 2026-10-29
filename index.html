@@ -112,8 +112,19 @@
 
     <aside id="data-mode-panel" class="data-mode-panel is-hidden" aria-label="データ表示の設定">
       <div class="data-mode-heading">
-        <strong>データ表示モード</strong>
-        <span>閲覧専用</span>
+        <div class="data-mode-heading-copy">
+          <strong>データ表示モード</strong>
+          <span>閲覧専用</span>
+        </div>
+        <button
+          id="close-data-mode-panel-btn"
+          class="data-mode-close-btn"
+          type="button"
+          aria-label="データ表示パネルを隠す"
+          title="パネルを隠す"
+        >
+          ×
+        </button>
       </div>
 
       <section class="data-mode-section" aria-labelledby="basemap-section-title">
@@ -164,6 +175,9 @@
 
       <label><input id="data-tourism-toggle" data-data-layer type="checkbox" checked> 観光地</label>
       <p id="data-mode-status" class="data-mode-status">地図上のデータをクリックすると値を確認できます。</p>
+      <button id="exit-data-mode-btn" class="data-mode-exit-btn" type="button">
+        データ閲覧を終了
+      </button>
     </aside>
 
 
@@ -174,6 +188,15 @@
   id="guide-panel"
   class="panel guide-panel guide-welcome"
 >
+  <button
+    id="guide-close-btn"
+    class="guide-close-btn"
+    type="button"
+    aria-label="案内パネルを閉じる"
+    title="案内を閉じる"
+  >
+    ×
+  </button>
   <div
     id="guide-icon"
     class="guide-icon"

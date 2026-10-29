@@ -338,6 +338,21 @@ export function toggleStationPlacement(){
 // analyze : 分析へ誘導
 // done    : 案内終了
 let guideStep = "place";
+let guideDismissedByUser = false;
+
+function showGuidePanel(panel) {
+  if (guideDismissedByUser || !panel) return;
+
+  panel.classList.add("guide-visible");
+  panel.classList.remove("guide-hidden");
+}
+
+function dismissGuidePanel() {
+  guideDismissedByUser = true;
+  document
+    .getElementById("guide-panel")
+    ?.classList.add("guide-hidden");
+}
 
 
 function setGuideStep(step) {
@@ -387,8 +402,7 @@ function setGuideStep(step) {
 
   if (step === "adjust") {
 
-    panel.classList.add("guide-visible");
-    panel.classList.remove("guide-hidden");
+    showGuidePanel(panel);
 
     icon.innerHTML = `
       <svg
@@ -428,8 +442,7 @@ function setGuideStep(step) {
 
   if (step === "analyze") {
 
-    panel.classList.add("guide-visible");
-    panel.classList.remove("guide-hidden");
+    showGuidePanel(panel);
 
     icon.innerHTML = `
       <svg
@@ -1328,6 +1341,9 @@ export function drawRoute(){
 // 初回、または「駅を追加」ボタンを押した直後の地図クリックで駅を追加する。
 export function bindAddByClick(){
   const map = getMap();
+  const closeGuideButton = document.getElementById("guide-close-btn");
+  closeGuideButton?.addEventListener("click", dismissGuidePanel);
+
   const startButton = document.getElementById("guide-start-btn");
   if (startButton) {
     startButton.disabled = false;

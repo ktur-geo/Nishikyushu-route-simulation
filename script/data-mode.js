@@ -281,18 +281,56 @@ export function initDataMode() {
 
   const button = document.getElementById('btn-data-mode');
   const panel = document.getElementById('data-mode-panel');
-  button?.addEventListener('click', () => {
-    const enabled = document.body.classList.toggle('mode-data');
+  const closePanelButton = document.getElementById('close-data-mode-panel-btn');
+  const exitDataModeButton = document.getElementById('exit-data-mode-btn');
+
+  const showPanel = () => {
+    panel?.classList.remove('is-hidden');
+    button?.setAttribute('aria-expanded', 'true');
+  };
+
+  const hidePanel = () => {
+    panel?.classList.add('is-hidden');
+    button?.setAttribute('aria-expanded', 'false');
+  };
+
+  button?.setAttribute('aria-controls', 'data-mode-panel');
+  button?.setAttribute('aria-expanded', 'false');
+  const setDataMode = enabled => {
+    document.body.classList.toggle('mode-data', enabled);
     setRouteReadOnly(enabled);
-    button.setAttribute('aria-pressed', String(enabled));
-    button.classList.toggle('is-active', enabled);
-    panel?.classList.toggle('is-hidden', !enabled);
+    button?.setAttribute('aria-pressed', String(enabled));
+    button?.classList.toggle('is-active', enabled);
+
     if (enabled) {
+      showPanel();
       refreshDataLayers();
       setBaseMapNote();
     } else {
+      hidePanel();
       clearDataLayers();
     }
+  };
+
+  button?.addEventListener('click', () => {
+    // パネルだけを隠している間は、データ表示を終了せず再表示する。
+    if (document.body.classList.contains('mode-data') && panel?.classList.contains('is-hidden')) {
+      showPanel();
+      return;
+    }
+
+    setDataMode(!document.body.classList.contains('mode-data'));
+  });
+
+  closePanelButton?.addEventListener('click', () => {
+    hidePanel();
+    // 隠した後でも、ヘッダーの「データ表示」からパネルを再び開ける。
+    button?.focus();
+  });
+
+  exitDataModeButton?.addEventListener('click', () => {
+    setDataMode(false);
+    button?.focus();
   });
 
   document.querySelectorAll('[data-base-map]').forEach(input => {
